@@ -2,7 +2,7 @@ import Link from "next/link";
 export default function labs() {
   return (
     <div id="wd-labs">
-      <h1>Labs</h1>
+      <h1>Labs Edwin Zhou Section 2</h1>
       <ul>
         <li>
           <Link href="/labs/lab1" id="wd-lab1-link">
@@ -20,8 +20,13 @@ export default function labs() {
           </Link>
         </li>
         <li>
-          <Link href="/" id="wd-lab3-link">
+          <Link href="/" id="wd-kambaz-link">
             Kambaz{" "}
+          </Link>
+        </li>
+        <li>
+          <Link href="https://github.com/EdwinZ11/kanbas-next-js" id="wd-github">
+            github repo
           </Link>
         </li>
       </ul>

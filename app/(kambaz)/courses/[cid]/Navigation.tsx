@@ -1,18 +1,18 @@
 import Link from "next/link";
-export default function CourseNavigation() {
+export default async function CourseNavigation({ cid }: { cid: string }) {
   return (
     <div id="wd-courses-navigation">
-      <Link href="/courses/1234/home" id="wd-course-home-link">Home</Link><br/>
-      <Link href="/courses/1234/modules" id="wd-course-modules-link">Modules
+      <Link href={`/courses/${cid}/home`} id="wd-course-home-link">Home</Link><br/>
+      <Link href={`/courses/${cid}/modules`} id="wd-course-modules-link">Modules
         </Link><br/>
-      <Link href="/courses/1234/piazza" id="wd-course-piazza-link">Piazza</Link><br/>
-      <Link href="/courses/1234/zoom" id="wd-course-zoom-link">Zoom</Link><br/>
-      <Link href="/courses/1234/assignments" id="wd-course-assignments-link">
+      <Link href={`/courses/${cid}/piazza`} id="wd-course-piazza-link">Piazza</Link><br/>
+      <Link href={`/courses/${cid}/zoom`} id="wd-course-zoom-link">Zoom</Link><br/>
+      <Link href={`/courses/${cid}/assignments`} id="wd-course-assignments-link">
           Assignments</Link><br/>
-      <Link href="/courses/1234/quizzes" id="wd-course-quizzes-link">Quizzes
+      <Link href={`/courses/${cid}/quizzes`} id="wd-course-quizzes-link">Quizzes
         </Link><br/>
-      <Link href="/courses/1234/grades" id="wd-course-grades-link">Grades</Link><br/>
-      <Link href="/courses/1234/people/table" id="wd-course-people-link">People</Link><br/>
+      <Link href={`/courses/${cid}/grades`} id="wd-course-grades-link">Grades</Link><br/>
+      <Link href={`/courses/${cid}/table`} id="wd-course-people-link">People</Link><br/>
     </div>
   );}
 

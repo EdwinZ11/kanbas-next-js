@@ -8,6 +8,6 @@ export default function KambazNavigation() {
       <Link href="/dashboard" id="wd-course-link">Courses</Link><br/>
       <Link href="/calendar" id="wd-calendar-link">Calendar</Link><br/>
       <Link href="/inbox" id="wd-inbox-link">Inbox</Link><br/>
-      <Link href="/labs" id="wd-labs-link">Labs</Link><br/>
+      <Link href="/labs" id="wd-labs-link">Labs/Home</Link><br/>
     </div>
 );}
