@@ -1,100 +1,51 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Row, Col, Card, CardImg, CardBody, CardTitle, CardText, Button } from "react-bootstrap";
+
 export default function Dashboard() {
+  const courses = [
+    { id: "1234", title: "CS1234 React JS", desc: "Full Stack software developer", img: "/images/reactjs.jpg" },
+    { id: "1101", title: "CS1101 Next JS", desc: "Full Stack software developer", img: "/images/nextjs.jpg" },
+    { id: "1102", title: "CS1102 Vue JS", desc: "Full Stack software developer", img: "/images/vuejs.jpg" },
+    { id: "1103", title: "CS1103 Angular JS", desc: "Full Stack software developer", img: "/images/angularjs.jpg" },
+    { id: "1104", title: "CS1104 Svelte", desc: "Full Stack software developer", img: "/images/svelte.jpg" },
+    { id: "1105", title: "CS1105 Ionic", desc: "Full Stack software developer", img: "/images/ionic.jpg" },
+    { id: "1106", title: "CS1106 Nuxt", desc: "Full Stack software developer", img: "/images/nuxt.jpg" },
+  ];
+
   return (
     <div id="wd-dashboard">
-      <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
-      <h2 id="wd-dashboard-published">Published Courses (12)</h2> <hr />
+      <h1 id="wd-dashboard-title">Dashboard</h1>
+      <hr />
+      <h2 id="wd-dashboard-published">Published Courses (12)</h2>
+      <hr />
+
       <div id="wd-dashboard-courses">
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image
-              src="/images/reactjs.jpg"
-              width={200}
-              height={150}
-              alt="reactjs"
-            />
-            <div>
-              <h5> CS1234 React JS </h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1101" className="wd-dashboard-course-link">
-            <Image src="/images/nextjs.jpg" width={200} height={150} alt="Next JS" />
-            <div>
-              <h5> CS1101 Next JS</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1102" className="wd-dashboard-course-link">
-            <Image src="/images/vuejs.jpg" width={200} height={150} alt="Vue JS" />
-            <div>
-              <h5> CS1102 Vue JS</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1103" className="wd-dashboard-course-link">
-            <Image src="/images/angularjs.jpg" width={200} height={150} alt="Angular JS" />
-            <div>
-              <h5> CS1103 Angular JS</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1104" className="wd-dashboard-course-link">
-            <Image src="/images/svelte.jpg" width={200} height={150} alt="Svelte" />
-            <div>
-              <h5> CS1104 Svelte</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1105" className="wd-dashboard-course-link">
-            <Image src="/images/ionic.jpg" width={200} height={150} alt="Ionic" />
-            <div>
-              <h5> CS1105 Ionic</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1106" className="wd-dashboard-course-link">
-            <Image src="/images/nuxt.jpg" width={200} height={150} alt="Nuxt" />
-            <div>
-              <h5> CS1106 Nuxt</h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
+        <Row xs={1} md={5} className="g-4">
+          {courses.map((c) => (
+            <Col key={c.id} className="wd-dashboard-course" style={{ width: "300px" }}>
+              <Card>
+                <Link
+                  href={`/courses/${c.id}/home`}
+                  className="wd-dashboard-course-link text-decoration-none text-dark"
+                >
+                  <CardImg variant="top" src={c.img} width="100%" height={160} />
+                  <CardBody>
+                    <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
+                      {c.title}
+                    </CardTitle>
+                    <CardText
+                      className="wd-dashboard-course-description overflow-hidden"
+                      style={{ height: "100px" }}
+                    >
+                      {c.desc}
+                    </CardText>
+                    <Button variant="primary">Go</Button>
+                  </CardBody>
+                </Link>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </div>
     </div>
   );
