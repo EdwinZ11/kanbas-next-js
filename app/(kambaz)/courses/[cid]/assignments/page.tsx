@@ -1,4 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import * as db from "../../../database";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import { FaRegFileAlt } from "react-icons/fa";
@@ -6,12 +11,9 @@ import AssignmentControls from "./assignmentControls";
 import AssignmentControlButtons from "./AssignmentControlButtons";
 import AssignmentGroupControlButtons from "./AssignmentGroupControlButtons";
 
-export default async function Assignments({
-  params,
-}: {
-  params: Promise<{ cid: string }>;
-}) {
-  const { cid } = await params;
+export default function Assignments() {
+  const { cid } = useParams();
+  const assignments = db.assignments.filter((a: any) => a.course === cid);
 
   return (
     <div>
@@ -20,7 +22,6 @@ export default async function Assignments({
 
       <ListGroup className="rounded-0" id="wd-assignments">
         <ListGroupItem className="wd-assignment-group p-0 mb-5 fs-5 border-gray">
-          {/* GROUP HEADER (flex + vertical center + buttons right) */}
           <div className="wd-title p-3 ps-2 bg-secondary d-flex align-items-center">
             <BsGripVertical className="me-2 fs-3" />
             <span>ASSIGNMENTS</span>
@@ -30,91 +31,35 @@ export default async function Assignments({
           </div>
 
           <ListGroup className="wd-assignments rounded-0">
-            {/* A1 */}
-            <ListGroupItem className="wd-assignment p-3 ps-1">
-              {/* TOP LINE (flex + vertical center + buttons right) */}
-              <div className="d-flex align-items-center">
-                <BsGripVertical className="me-2 fs-3" />
-                <FaRegFileAlt className="me-2 fs-4 text-success" />
+            {assignments.map((a: any) => (
+              <ListGroupItem key={a._id} className="wd-assignment p-3 ps-1">
+                <div className="d-flex align-items-center">
+                  <BsGripVertical className="me-2 fs-3" />
+                  <FaRegFileAlt className="me-2 fs-4 text-success" />
 
-                <Link
-                  href={`/courses/${cid}/assignments/123`}
-                  className="text-decoration-none text-black"
-                >
-                  A1 - ENV + HTML
-                </Link>
+                  <Link 
+                    href={`/courses/${cid}/assignments/${a._id}`}
+                    className="text-decoration-none text-black"
+                  >
+                    {a.title}
+                  </Link>
 
-                <div className="ms-auto">
-                  <AssignmentControlButtons />
+                  <div className="ms-auto">
+                    <AssignmentControlButtons />
+                  </div>
                 </div>
-              </div>
 
-              {/* SUBTEXT */}
-              <div className="small ms-5">
-                <span className="text-danger">Multiple Modules</span>
-                <span className="text-secondary">
-                  {" "}
-                  | Not available until May 6 at 12:00am | Due May 13 at 11:59pm
-                  | 100 pts
-                </span>
-              </div>
-            </ListGroupItem>
-
-            {/* A2 */}
-            <ListGroupItem className="wd-assignment p-3 ps-1">
-              <div className="d-flex align-items-center">
-                <BsGripVertical className="me-2 fs-3" />
-                <FaRegFileAlt className="me-2 fs-4 text-success" />
-
-                <Link
-                  href={`/courses/${cid}/assignments/123`}
-                  className="text-decoration-none text-black"
-                >
-                  A2 - CSS + BOOTSTRAP
-                </Link>
-
-                <div className="ms-auto">
-                  <AssignmentControlButtons />
+                <div className="small ms-5">
+                  <span className="text-danger">Multiple Modules</span>
+                  <span className="text-secondary">
+                    {" "}
+                    | Available From {a.availableFrom ?? "May 6 at 12:00am"}{" "}
+                    | Due {a.dueDate ?? "May 13 at 11:59pm"} |{" "}
+                    {a.points ?? 100} pts
+                  </span>
                 </div>
-              </div>
-
-              <div className="small ms-5">
-                <span className="text-danger">Multiple Modules</span>
-                <span className="text-secondary">
-                  {" "}
-                  | Not available until May 13 at 12:00am | Due May 20 at 11:59pm
-                  | 100 pts
-                </span>
-              </div>
-            </ListGroupItem>
-
-            {/* A3 */}
-            <ListGroupItem className="wd-assignment p-3 ps-1">
-              <div className="d-flex align-items-center">
-                <BsGripVertical className="me-2 fs-3" />
-                <FaRegFileAlt className="me-2 fs-4 text-success" />
-
-                <Link
-                  href={`/courses/${cid}/assignments/123`}
-                  className="text-decoration-none text-black"
-                >
-                  A3 - JAVASCRIPT + REACT
-                </Link>
-
-                <div className="ms-auto">
-                  <AssignmentControlButtons />
-                </div>
-              </div>
-
-              <div className="small ms-5">
-                <span className="text-danger">Multiple Modules</span>
-                <span className="text-secondary">
-                  {" "}
-                  | Not available until May 20 at 12:00am | Due May 27 at 11:59pm
-                  | 100 pts
-                </span>
-              </div>
-            </ListGroupItem>
+              </ListGroupItem>
+            ))}
           </ListGroup>
         </ListGroupItem>
       </ListGroup>

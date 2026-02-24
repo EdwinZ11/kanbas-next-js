@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import * as db from "../../../../database";
 import {
-  Button,
   Col,
   FormControl,
   FormLabel,
@@ -8,17 +13,16 @@ import {
 } from "react-bootstrap";
 
 export default function AssignmentEditor() {
-  return (
-    <div id="wd-assignments-editor" className="p-3">
-      <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
-      <FormControl id="wd-name" defaultValue="A1" className="mb-3" />
+  const { cid, aid } = useParams();
 
-      <FormControl
-        as="textarea"
-        id="wd-description"
-        rows={8}
-        className="mb-4"
-        defaultValue={`The assignment is available online.
+  const assignment: any = db.assignments.find(
+    (a: any) => a._id === aid && a.course === cid
+  );
+
+  const title = assignment?.title ?? "A1";
+  const description =
+    assignment?.description ??
+    `The assignment is available online.
 
 Submit a link to the landing page of your Web application running on Netlify.
 
@@ -28,7 +32,29 @@ The landing page should include the following:
 • Link to the Kambaz application
 • Links to all relevant source code repositories
 
-The Kambaz application should include a link to navigate back to the landing page.`}
+The Kambaz application should include a link to navigate back to the landing page.`;
+
+  const points = assignment?.points ?? 100;
+  const group = assignment?.group ?? "ASSIGNMENTS";
+  const displayGradeAs = assignment?.displayGradeAs ?? "PERCENTAGE";
+  const submissionType = assignment?.submissionType ?? "ONLINE";
+  const assignTo = assignment?.assignTo ?? "Everyone";
+
+  const dueDate = assignment?.dueDate ?? "2024-05-13T23:59";
+  const availableFrom = assignment?.availableFrom ?? "2024-05-06T00:00";
+  const availableUntil = assignment?.availableUntil ?? "2024-05-20T23:59";
+
+  return (
+    <div id="wd-assignments-editor" className="p-3">
+      <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
+      <FormControl id="wd-name" defaultValue={title} className="mb-3" />
+
+      <FormControl
+        as="textarea"
+        id="wd-description"
+        rows={8}
+        className="mb-4"
+        defaultValue={description}
       />
 
       <Row className="mb-3 align-items-center">
@@ -38,7 +64,7 @@ The Kambaz application should include a link to navigate back to the landing pag
           </FormLabel>
         </Col>
         <Col xs={12} md={9}>
-          <FormControl id="wd-points" defaultValue={100} />
+          <FormControl id="wd-points" defaultValue={points} />
         </Col>
       </Row>
 
@@ -49,7 +75,7 @@ The Kambaz application should include a link to navigate back to the landing pag
           </FormLabel>
         </Col>
         <Col xs={12} md={9}>
-          <FormSelect id="wd-assignment-group" defaultValue="ASSIGNMENTS">
+          <FormSelect id="wd-assignment-group" defaultValue={group}>
             <option value="ASSIGNMENTS">ASSIGNMENTS</option>
             <option value="QUIZZES">QUIZZES</option>
             <option value="EXAMS">EXAMS</option>
@@ -65,7 +91,7 @@ The Kambaz application should include a link to navigate back to the landing pag
           </FormLabel>
         </Col>
         <Col xs={12} md={9}>
-          <FormSelect id="wd-display-grade-as" defaultValue="PERCENTAGE">
+          <FormSelect id="wd-display-grade-as" defaultValue={displayGradeAs}>
             <option value="PERCENTAGE">Percentage</option>
             <option value="POINTS">Points</option>
             <option value="LETTER_GRADE">Letter Grade</option>
@@ -80,7 +106,7 @@ The Kambaz application should include a link to navigate back to the landing pag
           </FormLabel>
         </Col>
         <Col xs={12} md={9}>
-          <FormSelect id="wd-submission-type" defaultValue="ONLINE">
+          <FormSelect id="wd-submission-type" defaultValue={submissionType}>
             <option value="ONLINE">Online</option>
             <option value="ON_PAPER">On Paper</option>
             <option value="NO_SUBMISSION">No Submission</option>
@@ -99,6 +125,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 className="form-check-input"
                 type="checkbox"
                 id="wd-text-entry"
+                defaultChecked={assignment?.textEntry ?? false}
               />
               <label className="form-check-label" htmlFor="wd-text-entry">
                 Text Entry
@@ -110,7 +137,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 className="form-check-input"
                 type="checkbox"
                 id="wd-website-url"
-                defaultChecked
+                defaultChecked={assignment?.websiteUrl ?? true}
               />
               <label className="form-check-label" htmlFor="wd-website-url">
                 Website URL
@@ -122,6 +149,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 className="form-check-input"
                 type="checkbox"
                 id="wd-media-recordings"
+                defaultChecked={assignment?.mediaRecordings ?? false}
               />
               <label className="form-check-label" htmlFor="wd-media-recordings">
                 Media Recordings
@@ -133,6 +161,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 className="form-check-input"
                 type="checkbox"
                 id="wd-student-annotation"
+                defaultChecked={assignment?.studentAnnotation ?? false}
               />
               <label
                 className="form-check-label"
@@ -147,6 +176,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 className="form-check-input"
                 type="checkbox"
                 id="wd-file-uploads"
+                defaultChecked={assignment?.fileUploads ?? false}
               />
               <label className="form-check-label" htmlFor="wd-file-uploads">
                 File Uploads
@@ -165,7 +195,7 @@ The Kambaz application should include a link to navigate back to the landing pag
             <FormLabel htmlFor="wd-assign-to">Assign to</FormLabel>
             <FormControl
               id="wd-assign-to"
-              defaultValue="Everyone"
+              defaultValue={assignTo}
               className="mb-3"
             />
 
@@ -173,7 +203,7 @@ The Kambaz application should include a link to navigate back to the landing pag
             <FormControl
               id="wd-due-date"
               type="datetime-local"
-              defaultValue="2024-05-13T23:59"
+              defaultValue={dueDate}
               className="mb-3"
             />
 
@@ -185,7 +215,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 <FormControl
                   id="wd-available-from"
                   type="datetime-local"
-                  defaultValue="2024-05-06T00:00"
+                  defaultValue={availableFrom}
                 />
               </Col>
               <Col>
@@ -193,7 +223,7 @@ The Kambaz application should include a link to navigate back to the landing pag
                 <FormControl
                   id="wd-available-until"
                   type="datetime-local"
-                  defaultValue="2024-05-20T23:59"
+                  defaultValue={availableUntil}
                 />
               </Col>
             </Row>
@@ -202,10 +232,20 @@ The Kambaz application should include a link to navigate back to the landing pag
       </Row>
 
       <div className="d-flex justify-content-end gap-2 mt-4">
-        <Button variant="light" className="border">
+        <Link
+          href={`/courses/${cid}/assignments`}
+          id="wd-cancel-assignment"
+          className="btn btn-light border"
+        >
           Cancel
-        </Button>
-        <Button variant="danger">Save</Button>
+        </Link>
+        <Link
+          href={`/courses/${cid}/assignments`}
+          id="wd-save-assignment"
+          className="btn btn-danger"
+        >
+          Save
+        </Link>
       </div>
     </div>
   );
