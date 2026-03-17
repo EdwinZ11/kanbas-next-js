@@ -54,7 +54,7 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
       <div className="d-flex">
         {showNav && (
           <div className="d-none d-md-block">
-            <CourseNavigation cid={cid} />
+            <CourseNavigation cid={cid as string} />
           </div>
         )}
         <div className="flex-fill">{children}</div>
