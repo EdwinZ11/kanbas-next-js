@@ -3,17 +3,30 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import * as db from "../../../database";
+import { useDispatch, useSelector } from "react-redux";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import { FaRegFileAlt } from "react-icons/fa";
+import { RootState } from "../../../store";
+import { deleteAssignment } from "../assignments/reducer";
 import AssignmentControls from "./assignmentControls";
 import AssignmentControlButtons from "./AssignmentControlButtons";
 import AssignmentGroupControlButtons from "./AssignmentGroupControlButtons";
 
 export default function Assignments() {
   const { cid } = useParams();
-  const assignments = db.assignments.filter((a: any) => a.course === cid);
+  const dispatch = useDispatch();
+
+  const { assignments } = useSelector(
+    (state: RootState) => state.assignmentsReducer
+  );
+
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
+
+  const courseAssignments = assignments.filter((a: any) => a.course === cid);
+  const isFaculty = currentUser?.role === "FACULTY";
 
   return (
     <div>
@@ -31,20 +44,36 @@ export default function Assignments() {
           </div>
 
           <ListGroup className="wd-assignments rounded-0">
-            {assignments.map((a: any) => (
+            {courseAssignments.map((a: any) => (
               <ListGroupItem key={a._id} className="wd-assignment p-3 ps-1">
                 <div className="d-flex align-items-center">
                   <BsGripVertical className="me-2 fs-3" />
                   <FaRegFileAlt className="me-2 fs-4 text-success" />
 
-                  <Link 
+                  <Link
                     href={`/courses/${cid}/assignments/${a._id}`}
                     className="text-decoration-none text-black"
                   >
-                    {a.title}
+                    {a.title || a.name}
                   </Link>
 
-                  <div className="ms-auto">
+                  <div className="ms-auto d-flex align-items-center">
+                    {isFaculty && (
+                      <button
+                        className="btn btn-danger btn-sm me-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const ok = window.confirm(
+                            "Are you sure you want to remove this assignment?"
+                          );
+                          if (ok) {
+                            dispatch(deleteAssignment(a._id));
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
                     <AssignmentControlButtons />
                   </div>
                 </div>
@@ -53,9 +82,10 @@ export default function Assignments() {
                   <span className="text-danger">Multiple Modules</span>
                   <span className="text-secondary">
                     {" "}
-                    | Available From {a.availableFrom ?? "May 6 at 12:00am"}{" "}
-                    | Due {a.dueDate ?? "May 13 at 11:59pm"} |{" "}
-                    {a.points ?? 100} pts
+                    | Available From{" "}
+                    {a.availableFromDate || a.availableFrom || "May 6 at 12:00am"}{" "}
+                    | Due {a.dueDate || "May 13 at 11:59pm"} |{" "}
+                    {a.points || 100} pts
                   </span>
                 </div>
               </ListGroupItem>

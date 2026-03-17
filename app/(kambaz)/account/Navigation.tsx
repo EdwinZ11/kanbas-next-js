@@ -1,33 +1,19 @@
+"use client";
 import Link from "next/link";
-
+import { usePathname } from "next/navigation";
+import { Nav, NavItem, NavLink } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
 export default function AccountNavigation() {
-  return (
-    <div id="wd-account-navigation" className="p-3">
-       <Link
-        href="/account/signin"
-        className="text-danger text-decoration-none d-inline-block mb-3"
-        id="wd-account-signin-link"
-      >
-        SignIn
-      </Link>
-      <br />
-
-      <Link
-        href="/account/signup"
-        className="text-danger text-decoration-none d-inline-block mb-3"
-        id="wd-account-signup-link"
-      >
-        Signup
-      </Link>
-      <br />
-
-      <Link
-        href="/account/profile"
-        className="text-danger text-decoration-none d-inline-block"
-        id="wd-account-profile-link"
-      >
-        Profile
-      </Link>
-    </div>
-  );
-}
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const links = currentUser ? ["profile"] : ["signin", "signup"];
+ const pathname = usePathname();
+ return (
+   <Nav variant="pills">
+     {links.map((link) => (
+       <NavItem key={link}>
+         <NavLink as={Link} href={link} active={pathname.endsWith(link)}>
+           {link} </NavLink> </NavItem>
+     ))}
+   </Nav>
+);}

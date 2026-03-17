@@ -37,6 +37,30 @@ export default function TOC() {
       </NavItem>
 
       <NavItem>
+        <NavLink href="/labs/lab4" as={Link} id="wd-lab4-link"  className={`nav-link ${pathname.endsWith("lab4") ? "active" : ""}`}>
+          Lab 4
+        </NavLink>
+      </NavItem>
+
+      <NavItem>
+        <NavLink href="/labs/lab4/redux" as={Link} id="wd-lab4-redux-link"  className={`nav-link ${pathname.endsWith("redux") ? "active" : ""}`}>
+          Lab 4: Redux
+        </NavLink>
+      </NavItem>
+
+      <NavItem>
+        <NavLink href="/labs/lab4/react-context" as={Link} id="wd-lab4-react-content-link"  className={`nav-link ${pathname.endsWith("react-context") ? "active" : ""}`}>
+          Lab 4: React Context
+        </NavLink>
+      </NavItem>
+
+      <NavItem>
+        <NavLink href="/labs/lab4/zustand" as={Link} id="wd-lab4-zustand-link"  className={`nav-link ${pathname.endsWith("zustand") ? "active" : ""}`}>
+          Lab 4: Zustand
+        </NavLink>
+      </NavItem>
+
+      <NavItem>
         <NavLink href="/" as={Link} id="wd-kambaz-link">
           Kambaz
         </NavLink>

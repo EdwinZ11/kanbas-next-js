@@ -1,68 +1,84 @@
-import Link from "next/link";
-import { Button, FormControl, FormSelect } from "react-bootstrap";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { Button, FormControl } from "react-bootstrap";
+import { setCurrentUser } from "../reducer";
+import { RootState } from "../../store";
 
 export default function Profile() {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
+
+  useEffect(() => {
+    if (!currentUser) {
+      router.push("/account/signin");
+    }
+  }, [currentUser, router]);
+
+  const signout = () => {
+    dispatch(setCurrentUser(null));
+    router.push("/account/signin");
+  };
+
+  if (!currentUser) return null;
+
   return (
-    <div id="wd-profile-screen" className="p-3" style={{ maxWidth: 360 }}>
-      <h1 className="mb-3 fw-normal">Profile</h1>
-
-      <FormControl
-        defaultValue="alice"
-        placeholder="username"
-        id="wd-username"
-        className="mb-2"
-      />
-
-      <FormControl
-        defaultValue="123"
-        placeholder="password"
-        type="password"
-        id="wd-password"
-        className="mb-2"
-      />
-
-      <FormControl
-        defaultValue="Alice"
-        placeholder="First Name"
-        id="wd-firstname"
-        className="mb-2"
-      />
-
-      <FormControl
-        defaultValue="Wonderland"
-        placeholder="Last Name"
-        id="wd-lastname"
-        className="mb-2"
-      />
-
-      {/* date input: screenshot shows mm/dd/yyyy placeholder */}
-      <FormControl
-        type="date"
-        id="wd-dob"
-        className="mb-2"
-        placeholder="mm/dd/yyyy"
-        defaultValue="2000-01-01"
-      />
-
-      <FormControl
-        defaultValue="alice@wonderland.com"
-        type="email"
-        id="wd-email"
-        className="mb-2"
-      />
-
-      <FormSelect defaultValue="USER" id="wd-role" className="mb-3">
-        <option value="USER">User</option>
-        <option value="ADMIN">Admin</option>
-        <option value="FACULTY">Faculty</option>
-        <option value="STUDENT">Student</option>
-      </FormSelect>
-
-      <Link href="/account/signin" className="text-decoration-none">
-        <Button variant="danger" className="w-100">
-          Signout
+    <div className="wd-profile-screen">
+      <h3>Profile</h3>
+      <div>
+        <FormControl
+          id="wd-username"
+          className="mb-2"
+          value={currentUser.username || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-password"
+          className="mb-2"
+          value={currentUser.password || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-firstname"
+          className="mb-2"
+          value={currentUser.firstName || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-lastname"
+          className="mb-2"
+          value={currentUser.lastName || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-dob"
+          className="mb-2"
+          type="date"
+          value={currentUser.dob || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-email"
+          className="mb-2"
+          value={currentUser.email || ""}
+          readOnly
+        />
+        <FormControl
+          id="wd-role"
+          className="mb-2"
+          value={currentUser.role || ""}
+          readOnly
+        />
+        <Button onClick={signout} className="w-100 mb-2" id="wd-signout-btn">
+          Sign out
         </Button>
-      </Link>
+      </div>
     </div>
   );
 }

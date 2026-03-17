@@ -25,6 +25,26 @@ export default function labs() {
           </Link>
         </li>
         <li>
+          <Link href="/labs/lab4" id="wd-lab4-link">
+            Lab 4: State Management Fundamentals{" "}
+          </Link>
+        </li>
+        <li>
+          <Link href="/labs/lab4/redux" id="wd-lab4-redux-link">
+            Lab 4: Redux{" "}
+          </Link>
+        </li>
+        <li>
+          <Link href="/labs/lab4/react-context" id="wd-lab4-react-context-link">
+            Lab 4: React Context{" "}
+          </Link>
+        </li>
+        <li>
+          <Link href="/labs/lab4/zustand" id="wd-lab4-zustand-link">
+            Lab 4: Zustand{" "}
+          </Link>
+        </li>
+        <li>
           <Link href="/" id="wd-kambaz-link">
             Kambaz{" "}
           </Link>
