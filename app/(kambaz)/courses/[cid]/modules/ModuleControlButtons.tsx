@@ -1,8 +1,12 @@
+"use client";
+
 import { IoEllipsisVertical } from "react-icons/io5";
 import { BsPlus } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
 import { FaTrash } from "react-icons/fa";
 import { FaPencil } from "react-icons/fa6";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
 
 export default function ModuleControlButtons({
   moduleId,
@@ -13,6 +17,14 @@ export default function ModuleControlButtons({
   deleteModule: (moduleId: string) => void;
   editModule: (moduleId: string) => void;
 }) {
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
+
+  const isFaculty = currentUser?.role === "FACULTY";
+
+  if (!isFaculty) return null;
+
   return (
     <div className="float-end">
       <FaPencil

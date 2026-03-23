@@ -9,6 +9,8 @@ import {
   DropdownToggle,
 } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa6";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
 import GreenCheckmark from "./GreenCheckmark";
 import ModuleEditor from "./ModuleEditor";
 
@@ -23,8 +25,16 @@ export default function ModulesControls({
 }) {
   const [show, setShow] = useState(false);
 
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
+
+  const isFaculty = currentUser?.role === "FACULTY";
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  if (!isFaculty) return null;
 
   return (
     <div id="wd-modules-controls" className="text-nowrap">

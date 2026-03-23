@@ -4,10 +4,18 @@ import { Button, FormControl, InputGroup } from "react-bootstrap";
 import { FiSearch } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { useParams, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
 
 export default function AssignmentControls() {
   const { cid } = useParams();
   const router = useRouter();
+
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
+
+  const isFaculty = currentUser?.role === "FACULTY";
 
   return (
     <div
@@ -26,28 +34,36 @@ export default function AssignmentControls() {
         />
       </InputGroup>
 
-      <div className="ms-auto d-flex">
-        <Button
-          variant="secondary"
-          size="lg"
-          className="me-1 float-end"
-          id="wd-add-group-btn"
-        >
-          <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-          Group
-        </Button>
+      {isFaculty && (
+        <div className="ms-auto d-flex">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="me-1 float-end"
+            id="wd-add-group-btn"
+          >
+            <FaPlus
+              className="position-relative me-2"
+              style={{ bottom: "1px" }}
+            />
+            Group
+          </Button>
 
-        <Button
-          variant="danger"
-          size="lg"
-          className="me-1 float-end"
-          id="wd-add-assignment-btn"
-          onClick={() => router.push(`/courses/${cid}/assignments/new`)}
-        >
-          <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-          Assignment
-        </Button>
-      </div>
+          <Button
+            variant="danger"
+            size="lg"
+            className="me-1 float-end"
+            id="wd-add-assignment-btn"
+            onClick={() => router.push(`/courses/${cid}/assignments/new`)}
+          >
+            <FaPlus
+              className="position-relative me-2"
+              style={{ bottom: "1px" }}
+            />
+            Assignment
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
