@@ -13,7 +13,11 @@ import {
   Button,
 } from "react-bootstrap";
 import { RootState } from "../../../../store";
-import { addAssignment, updateAssignment } from "../../assignments/reducer";
+import {
+  addAssignment,
+  updateAssignment as updateAssignmentInReducer,
+} from "../../assignments/reducer";
+import * as client from "../../../client";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
@@ -62,11 +66,16 @@ The Kambaz application should include a link to navigate back to the landing pag
     }
   );
 
-  const save = () => {
+  const save = async () => {
     if (isNew) {
-      dispatch(addAssignment({ ...assignment, course: cid }));
+      const newAssignment = await client.createAssignment(cid as string, {
+        ...assignment,
+        course: cid,
+      });
+      dispatch(addAssignment(newAssignment));
     } else {
-      dispatch(updateAssignment(assignment));
+      const updatedAssignment = await client.updateAssignment(assignment);
+      dispatch(updateAssignmentInReducer(updatedAssignment));
     }
     router.push(`/courses/${cid}/assignments`);
   };
