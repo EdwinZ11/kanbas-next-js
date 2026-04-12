@@ -14,7 +14,7 @@ export default function PeopleTable({
 }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showUserId, setShowUserId] = useState<string | null>(null);
-
+  console.log("people table users:", users);
   return (
     <div id="wd-people-table">
       {showDetails && (

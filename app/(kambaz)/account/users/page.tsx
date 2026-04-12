@@ -52,7 +52,7 @@ export default function Users() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
+  console.log("users page users:", users);
   return (
     <div id="wd-users-screen">
       <button
