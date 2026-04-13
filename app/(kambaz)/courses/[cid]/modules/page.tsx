@@ -11,10 +11,8 @@ import LessonControlButtons from "./LessonControlButtons";
 import ModuleControlButtons from "./ModuleControlButtons";
 import {
   setModules,
-  addModule,
   editModule,
-  updateModule,
-  deleteModule,
+  updateModule as updateModuleAction,
 } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../store";
@@ -28,28 +26,36 @@ export default function Modules() {
 
   const onCreateModuleForCourse = async () => {
     if (!cid) return;
-    const newModule = { name: moduleName, course: cid as string};
+    const newModule = { name: moduleName };
     const module = await client.createModuleForCourse(cid as string, newModule);
     dispatch(setModules([...modules, module]));
+    setModuleName("");
   };
+
   const onRemoveModule = async (moduleId: string) => {
-    await client.deleteModule(moduleId);
+    if (!cid) return;
+    await client.deleteModule(cid as string, moduleId);
     dispatch(setModules(modules.filter((m: any) => m._id !== moduleId)));
   };
+
   const onUpdateModule = async (module: any) => {
-    await client.updateModule(module);
+    if (!cid) return;
+    await client.updateModule(cid as string, module);
     const newModules = modules.map((m: any) =>
       m._id === module._id ? module : m
     );
     dispatch(setModules(newModules));
   };
+
   const fetchModules = async () => {
+    if (!cid) return;
     const modules = await client.findModulesForCourse(cid as string);
     dispatch(setModules(modules));
   };
+
   useEffect(() => {
     fetchModules();
-  }, []);
+  }, [cid]);
 
   return (
     <div>
@@ -70,21 +76,26 @@ export default function Modules() {
           >
             <div className="wd-title p-3 ps-2 bg-secondary">
               <BsGripVertical className="me-2 fs-3" />
+
               {!module.editing && module.name}
+
               {module.editing && (
                 <FormControl
                   className="w-50 d-inline-block"
+                  defaultValue={module.name}
                   onChange={(e) =>
-                    dispatch(updateModule({ ...module, name: e.target.value }))
+                    dispatch(
+                      updateModuleAction({ ...module, name: e.target.value })
+                    )
                   }
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onUpdateModule({ ...module, editing: false });
                     }
                   }}
-                  defaultValue={module.name}
                 />
               )}
+
               <ModuleControlButtons
                 moduleId={module._id}
                 deleteModule={(moduleId) => onRemoveModule(moduleId)}

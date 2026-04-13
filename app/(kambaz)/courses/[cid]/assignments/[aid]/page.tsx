@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   Col,
   FormControl,
@@ -12,7 +12,6 @@ import {
   Row,
   Button,
 } from "react-bootstrap";
-import { RootState } from "../../../../store";
 import {
   addAssignment,
   updateAssignment as updateAssignmentInReducer,
@@ -24,47 +23,41 @@ export default function AssignmentEditor() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { assignments } = useSelector(
-    (state: RootState) => state.assignmentsReducer
-  );
+  const isNew = aid === "new";
 
-  const existingAssignment = assignments.find(
-    (a: any) => a._id === aid && a.course === cid
-  );
+  const [assignment, setAssignment] = useState<any>({
+    _id: "new",
+    course: cid,
+    title: "A1",
+    description: `The assignment is available online.
 
-  const isNew = aid === "new" || !existingAssignment;
+Submit a link to the landing page of your Web application running on Netlify.`,
+    points: 100,
+    group: "ASSIGNMENTS",
+    displayGradeAs: "PERCENTAGE",
+    submissionType: "ONLINE",
+    assignTo: "Everyone",
+    dueDate: "2024-05-13T23:59",
+    availableFrom: "2024-05-06T00:00",
+    availableUntil: "2024-05-20T23:59",
+    textEntry: false,
+    websiteUrl: true,
+    mediaRecordings: false,
+    studentAnnotation: false,
+    fileUploads: false,
+  });
 
-  const [assignment, setAssignment] = useState<any>(
-    existingAssignment || {
-      _id: "new",
-      course: cid,
-      title: "A1",
-      description: `The assignment is available online.
-
-Submit a link to the landing page of your Web application running on Netlify.
-
-The landing page should include the following:
-• Your full name and section
-• Links to each of the lab assignments
-• Link to the Kambaz application
-• Links to all relevant source code repositories
-
-The Kambaz application should include a link to navigate back to the landing page.`,
-      points: 100,
-      group: "ASSIGNMENTS",
-      displayGradeAs: "PERCENTAGE",
-      submissionType: "ONLINE",
-      assignTo: "Everyone",
-      dueDate: "2024-05-13T23:59",
-      availableFrom: "2024-05-06T00:00",
-      availableUntil: "2024-05-20T23:59",
-      textEntry: false,
-      websiteUrl: true,
-      mediaRecordings: false,
-      studentAnnotation: false,
-      fileUploads: false,
+  const fetchAssignment = async () => {
+    if (!aid || aid === "new") return;
+    const existingAssignment = await client.findAssignmentById(aid as string);
+    if (existingAssignment) {
+      setAssignment(existingAssignment);
     }
-  );
+  };
+
+  useEffect(() => {
+    fetchAssignment();
+  }, [aid]);
 
   const save = async () => {
     if (isNew) {
@@ -194,108 +187,6 @@ The Kambaz application should include a link to navigate back to the landing pag
 
       <Row className="mb-3">
         <Col xs={12} md={3} className="text-md-end">
-          <FormLabel className="mb-0">Online Entry Options</FormLabel>
-        </Col>
-        <Col xs={12} md={9}>
-          <div className="border rounded p-3">
-            <div className="form-check mb-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="wd-text-entry"
-                checked={assignment.textEntry}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    textEntry: e.target.checked,
-                  })
-                }
-              />
-              <label className="form-check-label" htmlFor="wd-text-entry">
-                Text Entry
-              </label>
-            </div>
-
-            <div className="form-check mb-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="wd-website-url"
-                checked={assignment.websiteUrl}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    websiteUrl: e.target.checked,
-                  })
-                }
-              />
-              <label className="form-check-label" htmlFor="wd-website-url">
-                Website URL
-              </label>
-            </div>
-
-            <div className="form-check mb-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="wd-media-recordings"
-                checked={assignment.mediaRecordings}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    mediaRecordings: e.target.checked,
-                  })
-                }
-              />
-              <label className="form-check-label" htmlFor="wd-media-recordings">
-                Media Recordings
-              </label>
-            </div>
-
-            <div className="form-check mb-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="wd-student-annotation"
-                checked={assignment.studentAnnotation}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    studentAnnotation: e.target.checked,
-                  })
-                }
-              />
-              <label
-                className="form-check-label"
-                htmlFor="wd-student-annotation"
-              >
-                Student Annotation
-              </label>
-            </div>
-
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="wd-file-uploads"
-                checked={assignment.fileUploads}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    fileUploads: e.target.checked,
-                  })
-                }
-              />
-              <label className="form-check-label" htmlFor="wd-file-uploads">
-                File Uploads
-              </label>
-            </div>
-          </div>
-        </Col>
-      </Row>
-
-      <Row className="mb-3">
-        <Col xs={12} md={3} className="text-md-end">
           <FormLabel className="mb-0">Assign</FormLabel>
         </Col>
         <Col xs={12} md={9}>
@@ -358,15 +249,10 @@ The Kambaz application should include a link to navigate back to the landing pag
       </Row>
 
       <div className="d-flex justify-content-end gap-2 mt-4">
-        <Button
-          variant="light"
-          className="border"
-          id="wd-cancel-assignment"
-          onClick={cancel}
-        >
+        <Button variant="light" className="border" onClick={cancel}>
           Cancel
         </Button>
-        <Button variant="danger" id="wd-save-assignment" onClick={save}>
+        <Button variant="danger" onClick={save}>
           Save
         </Button>
       </div>
