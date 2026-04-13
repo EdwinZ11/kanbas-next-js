@@ -82,16 +82,43 @@ export default function Dashboard() {
 
   const visibleCourses = showAllCourses
     ? courses
-    : courses.filter((course: any) => isEnrolled(course._id));
+    : courses.filter((c: any) => isEnrolled(c._id));
 
   const handleEnroll = async (courseId: string) => {
-    await client.enrollIntoCourse(courseId);
-    dispatch(enroll({ userId: currentUser._id, courseId }));
+    await client.enrollIntoCourse("current", courseId);
+    dispatch(enroll({ user: currentUser._id, course: courseId }));
   };
 
   const handleUnenroll = async (courseId: string) => {
-    await client.unenrollFromCourse(courseId);
-    dispatch(unenroll({ userId: currentUser._id, courseId }));
+    await client.unenrollFromCourse("current", courseId);
+    dispatch(unenroll({ user: currentUser._id, course: courseId }));
+  };
+
+  const handleAddCourse = async () => {
+    const newCourse = await client.createCourse(course);
+    dispatch(setCourses([...courses, newCourse]));
+    setCourse({
+      _id: "0",
+      name: "New Course",
+      number: "New Number",
+      startDate: "2023-09-10",
+      endDate: "2023-12-15",
+      image: "/images/reactjs.jpg",
+      description: "New Description",
+    });
+  };
+
+  const handleUpdateCourse = async () => {
+    const updatedCourse = await client.updateCourse(course);
+    const updatedCourses = courses.map((c: any) =>
+      c._id === updatedCourse._id ? updatedCourse : c
+    );
+    dispatch(setCourses(updatedCourses));
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    await client.deleteCourse(courseId);
+    dispatch(setCourses(courses.filter((c: any) => c._id !== courseId)));
   };
 
   return (
@@ -114,10 +141,18 @@ export default function Dashboard() {
         <>
           <h5>
             New Course
-            <Button variant="primary" className="float-end">
+            <Button
+              variant="primary"
+              className="float-end"
+              onClick={handleAddCourse}
+            >
               Add
             </Button>
-            <Button variant="warning" className="float-end me-2">
+            <Button
+              variant="warning"
+              className="float-end me-2"
+              onClick={handleUpdateCourse}
+            >
               Update
             </Button>
           </h5>
@@ -158,8 +193,12 @@ export default function Dashboard() {
                     href={enrolled ? `/courses/${c._id}/home` : "/dashboard"}
                     className="wd-dashboard-course-link text-decoration-none text-dark"
                     onClick={(e) => {
-                      if (!enrolled) {
+                      if (!enrolled && !isFaculty) {
                         e.preventDefault();
+                      }
+                      if (isFaculty) {
+                        e.preventDefault();
+                        setCourse(c);
                       }
                     }}
                   >
@@ -182,6 +221,20 @@ export default function Dashboard() {
                       </CardText>
 
                       <Button variant="primary">Go</Button>
+
+                      {isFaculty && (
+                        <Button
+                          variant="danger"
+                          className="float-end"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteCourse(c._id);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      )}
 
                       {!isFaculty && (
                         <>
