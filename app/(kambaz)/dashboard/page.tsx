@@ -95,8 +95,10 @@ export default function Dashboard() {
   };
 
   const handleAddCourse = async () => {
-    const newCourse = await client.createCourse(course);
-    dispatch(setCourses([...courses, newCourse]));
+    await client.createCourse(course);
+    await fetchAllCourses();
+    await fetchEnrollments();
+
     setCourse({
       _id: "0",
       name: "New Course",
