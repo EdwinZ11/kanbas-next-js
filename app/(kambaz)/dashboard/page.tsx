@@ -4,7 +4,6 @@
 import * as client from "../courses/client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Row,
   Col,
@@ -86,12 +85,12 @@ export default function Dashboard() {
 
   const handleEnroll = async (courseId: string) => {
     await client.enrollIntoCourse("current", courseId);
-    dispatch(enroll({ user: currentUser._id, course: courseId }));
+    dispatch(enroll({ userId: currentUser._id, courseId }));
   };
 
   const handleUnenroll = async (courseId: string) => {
     await client.unenrollFromCourse("current", courseId);
-    dispatch(unenroll({ user: currentUser._id, course: courseId }));
+    dispatch(unenroll({ userId: currentUser._id, courseId }));
   };
 
   const handleAddCourse = async () => {
@@ -121,6 +120,16 @@ export default function Dashboard() {
   const handleDeleteCourse = async (courseId: string) => {
     await client.deleteCourse(courseId);
     dispatch(setCourses(courses.filter((c: any) => c._id !== courseId)));
+  };
+
+  const handleGoToCourse = (courseId: string) => {
+    router.push(`/courses/${courseId}/home`);
+  };
+
+  const handleSelectCourseForEdit = (selectedCourse: any) => {
+    if (isFaculty) {
+      setCourse(selectedCourse);
+    }
   };
 
   return (
@@ -191,59 +200,74 @@ export default function Dashboard() {
                 style={{ width: "300px" }}
               >
                 <Card>
-                  <Link
-                    href={enrolled ? `/courses/${c._id}/home` : "/dashboard"}
-                    className="wd-dashboard-course-link text-decoration-none text-dark"
-                    onClick={(e) => {
-                      if (!enrolled && !isFaculty) {
-                        e.preventDefault();
-                      }
-                      if (isFaculty) {
-                        e.preventDefault();
-                        setCourse(c);
-                      }
-                    }}
+                  <CardImg
+                    variant="top"
+                    src={c.image || "/images/reactjs.jpg"}
+                    width="100%"
+                    height={160}
+                    style={{ cursor: isFaculty ? "pointer" : "default" }}
+                    onClick={() => handleSelectCourseForEdit(c)}
+                  />
+
+                  <CardBody
+                    style={{ cursor: isFaculty ? "pointer" : "default" }}
+                    onClick={() => handleSelectCourseForEdit(c)}
                   >
-                    <CardImg
-                      variant="top"
-                      src={c.image || "/images/reactjs.jpg"}
-                      width="100%"
-                      height={160}
-                    />
-                    <CardBody>
-                      <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
-                        {c.name}
-                      </CardTitle>
+                    <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
+                      {c.name}
+                    </CardTitle>
 
-                      <CardText
-                        className="wd-dashboard-course-description overflow-hidden"
-                        style={{ height: "100px" }}
+                    <CardText
+                      className="wd-dashboard-course-description overflow-hidden"
+                      style={{ height: "100px" }}
+                    >
+                      {c.description}
+                    </CardText>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <Button
+                        variant="primary"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleGoToCourse(c._id);
+                        }}
                       >
-                        {c.description}
-                      </CardText>
-
-                      <Button variant="primary">Go</Button>
+                        Go
+                      </Button>
 
                       {isFaculty && (
-                        <Button
-                          variant="danger"
-                          className="float-end"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteCourse(c._id);
-                          }}
-                        >
-                          Delete
-                        </Button>
+                        <>
+                          <Button
+                            variant="warning"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCourse(c);
+                            }}
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            variant="danger"
+                            className="ms-auto"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteCourse(c._id);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </>
                       )}
 
                       {!isFaculty && (
-                        <>
+                        <div className="ms-auto">
                           {enrolled ? (
                             <Button
                               variant="danger"
-                              className="float-end"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -255,7 +279,6 @@ export default function Dashboard() {
                           ) : (
                             <Button
                               variant="success"
-                              className="float-end"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -265,10 +288,10 @@ export default function Dashboard() {
                               Enroll
                             </Button>
                           )}
-                        </>
+                        </div>
                       )}
-                    </CardBody>
-                  </Link>
+                    </div>
+                  </CardBody>
                 </Card>
               </Col>
             );

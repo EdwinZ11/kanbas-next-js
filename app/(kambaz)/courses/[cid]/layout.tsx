@@ -29,12 +29,12 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
       return;
     }
 
+    const isFaculty = currentUser.role === "FACULTY";
     const isEnrolled = enrollments.some(
-      (e: any) =>
-        e.user === currentUser._id && e.course === cid
+      (e: any) => e.user === currentUser._id && e.course === cid
     );
 
-    if (!isEnrolled) {
+    if (!isFaculty && !isEnrolled) {
       router.push("/dashboard");
     }
   }, [currentUser, enrollments, cid, router]);

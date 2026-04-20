@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { setCurrentUser } from "../reducer";
 import { useDispatch } from "react-redux";
 import { useState } from "react";
-import { FormControl } from "react-bootstrap";
+import { FormControl, FormSelect } from "react-bootstrap";
 import * as client from "../client";
 
 export default function Signup() {
@@ -14,6 +14,7 @@ export default function Signup() {
     username: "",
     password: "",
     verifyPassword: "",
+    role: "STUDENT",
   });
 
   const dispatch = useDispatch();
@@ -28,6 +29,7 @@ export default function Signup() {
     const currentUser = await client.signup({
       username: user.username,
       password: user.password,
+      role: user.role,
     });
 
     dispatch(setCurrentUser(currentUser));
@@ -63,6 +65,16 @@ export default function Signup() {
         value={user.verifyPassword}
         onChange={(e) => setUser({ ...user, verifyPassword: e.target.value })}
       />
+
+      <FormSelect
+        id="wd-role"
+        className="mb-2"
+        value={user.role}
+        onChange={(e) => setUser({ ...user, role: e.target.value })}
+      >
+        <option value="STUDENT">Student</option>
+        <option value="FACULTY">Faculty</option>
+      </FormSelect>
 
       <button
         id="wd-signup-btn"
