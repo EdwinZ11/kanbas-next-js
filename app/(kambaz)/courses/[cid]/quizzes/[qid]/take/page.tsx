@@ -37,7 +37,9 @@ export default function TakeQuizPage() {
   const searchParams = useSearchParams();
   const preview = searchParams.get("preview") === "true";
 
-  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
   const isFaculty = currentUser?.role === "FACULTY";
 
   const [quiz, setQuiz] = useState<any>(null);
@@ -45,7 +47,6 @@ export default function TakeQuizPage() {
   const [submittedAttempt, setSubmittedAttempt] = useState<any>(null);
   const [previewResults, setPreviewResults] = useState<any>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [attemptCount, setAttemptCount] = useState(0);
 
   useEffect(() => {
     const loadQuiz = async () => {
@@ -57,7 +58,6 @@ export default function TakeQuizPage() {
       try {
         const latest = await client.findMyLatestQuizAttempt(qid as string);
         const count = await client.countMyQuizAttempts(qid as string);
-        setAttemptCount(count || 0);
 
         const maxedOut = data.multipleAttempts
           ? count >= data.howManyAttempts
@@ -67,7 +67,7 @@ export default function TakeQuizPage() {
           setSubmittedAttempt(latest);
         }
       } catch {
-        setAttemptCount(0);
+        // no saved attempt yet
       }
     };
 
@@ -93,6 +93,7 @@ export default function TakeQuizPage() {
   if (!quiz) return null;
 
   const locked = !!submittedAttempt || !!previewResults;
+  const showCorrect = preview || !!quiz.showCorrectAnswers;
 
   const onSubmit = async () => {
     const gradedAnswers = questions.map((q: any) => {
@@ -153,11 +154,13 @@ export default function TakeQuizPage() {
           </div>
           <div>
             Submitted:{" "}
-            <strong>{new Date(resultsSource.submittedAt).toLocaleString()}</strong>
+            <strong>
+              {new Date(resultsSource.submittedAt).toLocaleString()}
+            </strong>
           </div>
-          {!preview && (
+          {!preview && submittedAttempt?.attemptNumber && (
             <div>
-              Attempt: <strong>{submittedAttempt?.attemptNumber}</strong>
+              Attempt: <strong>{submittedAttempt.attemptNumber}</strong>
             </div>
           )}
         </div>
@@ -166,11 +169,12 @@ export default function TakeQuizPage() {
       {displayedQuestions.map((question: any) => {
         const graded = answerMap[question._id];
         const submitted = locked ? graded?.answer : answers[question._id];
-        const borderClass = locked
-          ? graded?.isCorrect
-            ? "border-success"
-            : "border-danger"
-          : "";
+        const borderClass =
+          locked && showCorrect
+            ? graded?.isCorrect
+              ? "border-success"
+              : "border-danger"
+            : "";
 
         return (
           <Card key={question._id} className={`mb-3 ${borderClass}`}>
@@ -232,7 +236,7 @@ export default function TakeQuizPage() {
                 />
               )}
 
-              {locked && (
+              {locked && showCorrect && (
                 <div
                   className={`mt-3 fw-bold ${
                     graded?.isCorrect ? "text-success" : "text-danger"

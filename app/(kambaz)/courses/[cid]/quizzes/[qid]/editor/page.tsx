@@ -52,7 +52,11 @@ export default function QuizEditorPage() {
           <Nav.Link active>Details</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/questions`)}>
+          <Nav.Link
+            onClick={() =>
+              router.push(`/courses/${cid}/quizzes/${qid}/questions`)
+            }
+          >
             Questions
           </Nav.Link>
         </Nav.Item>
@@ -75,7 +79,9 @@ export default function QuizEditorPage() {
       />
 
       <Row className="mb-3 align-items-center">
-        <Col md={3} className="text-md-end"><FormLabel className="mb-0">Quiz Type</FormLabel></Col>
+        <Col md={3} className="text-md-end">
+          <FormLabel className="mb-0">Quiz Type</FormLabel>
+        </Col>
         <Col md={9}>
           <FormSelect
             value={quiz.quizType}
@@ -90,11 +96,15 @@ export default function QuizEditorPage() {
       </Row>
 
       <Row className="mb-3 align-items-center">
-        <Col md={3} className="text-md-end"><FormLabel className="mb-0">Assignment Group</FormLabel></Col>
+        <Col md={3} className="text-md-end">
+          <FormLabel className="mb-0">Assignment Group</FormLabel>
+        </Col>
         <Col md={9}>
           <FormSelect
             value={quiz.assignmentGroup}
-            onChange={(e) => setQuiz({ ...quiz, assignmentGroup: e.target.value })}
+            onChange={(e) =>
+              setQuiz({ ...quiz, assignmentGroup: e.target.value })
+            }
           >
             <option value="QUIZZES">Quizzes</option>
             <option value="EXAMS">Exams</option>
@@ -105,22 +115,33 @@ export default function QuizEditorPage() {
       </Row>
 
       <Row className="mb-3 align-items-center">
-        <Col md={3} className="text-md-end"><FormLabel className="mb-0">Points</FormLabel></Col>
+        <Col md={3} className="text-md-end">
+          <FormLabel className="mb-0">Points</FormLabel>
+        </Col>
         <Col md={9}>
           <FormControl
             disabled
-            value={quiz.questions?.reduce((sum: number, q: any) => sum + (q.points || 0), 0) || 0}
+            value={
+              quiz.questions?.reduce(
+                (sum: number, q: any) => sum + (q.points || 0),
+                0
+              ) || 0
+            }
           />
         </Col>
       </Row>
 
       <Row className="mb-3 align-items-center">
-        <Col md={3} className="text-md-end"><FormLabel className="mb-0">Time Limit</FormLabel></Col>
+        <Col md={3} className="text-md-end">
+          <FormLabel className="mb-0">Time Limit</FormLabel>
+        </Col>
         <Col md={9}>
           <FormControl
             type="number"
             value={quiz.timeLimit || 20}
-            onChange={(e) => setQuiz({ ...quiz, timeLimit: parseInt(e.target.value) || 0 })}
+            onChange={(e) =>
+              setQuiz({ ...quiz, timeLimit: parseInt(e.target.value) || 0 })
+            }
           />
         </Col>
       </Row>
@@ -129,44 +150,70 @@ export default function QuizEditorPage() {
         <FormCheck
           label="Shuffle Answers"
           checked={!!quiz.shuffleAnswers}
-          onChange={(e) => setQuiz({ ...quiz, shuffleAnswers: e.target.checked })}
+          onChange={(e) =>
+            setQuiz({ ...quiz, shuffleAnswers: e.target.checked })
+          }
         />
         <FormCheck
           label="Multiple Attempts"
           checked={!!quiz.multipleAttempts}
-          onChange={(e) => setQuiz({ ...quiz, multipleAttempts: e.target.checked })}
+          onChange={(e) =>
+            setQuiz({ ...quiz, multipleAttempts: e.target.checked })
+          }
         />
         {quiz.multipleAttempts && (
           <FormControl
             className="mt-2"
             type="number"
             value={quiz.howManyAttempts || 1}
-            onChange={(e) => setQuiz({ ...quiz, howManyAttempts: parseInt(e.target.value) || 1 })}
+            onChange={(e) =>
+              setQuiz({
+                ...quiz,
+                howManyAttempts: parseInt(e.target.value) || 1,
+              })
+            }
           />
         )}
         <FormCheck
           label="One Question at a Time"
           checked={!!quiz.oneQuestionAtATime}
-          onChange={(e) => setQuiz({ ...quiz, oneQuestionAtATime: e.target.checked })}
+          onChange={(e) =>
+            setQuiz({ ...quiz, oneQuestionAtATime: e.target.checked })
+          }
         />
         <FormCheck
           label="Webcam Required"
           checked={!!quiz.webcamRequired}
-          onChange={(e) => setQuiz({ ...quiz, webcamRequired: e.target.checked })}
+          onChange={(e) =>
+            setQuiz({ ...quiz, webcamRequired: e.target.checked })
+          }
         />
         <FormCheck
           label="Lock Questions After Answering"
           checked={!!quiz.lockQuestionsAfterAnswering}
-          onChange={(e) => setQuiz({ ...quiz, lockQuestionsAfterAnswering: e.target.checked })}
+          onChange={(e) =>
+            setQuiz({
+              ...quiz,
+              lockQuestionsAfterAnswering: e.target.checked,
+            })
+          }
         />
       </div>
 
       <FormLabel>Show Correct Answers</FormLabel>
-      <FormControl
+      <FormSelect
         className="mb-3"
-        value={quiz.showCorrectAnswers || ""}
-        onChange={(e) => setQuiz({ ...quiz, showCorrectAnswers: e.target.value })}
-      />
+        value={quiz.showCorrectAnswers ? "YES" : "NO"}
+        onChange={(e) =>
+          setQuiz({
+            ...quiz,
+            showCorrectAnswers: e.target.value === "YES",
+          })
+        }
+      >
+        <option value="YES">Yes</option>
+        <option value="NO">No</option>
+      </FormSelect>
 
       <FormLabel>Access Code</FormLabel>
       <FormControl
@@ -192,7 +239,9 @@ export default function QuizEditorPage() {
           <FormControl
             type="datetime-local"
             value={quiz.availableFrom || ""}
-            onChange={(e) => setQuiz({ ...quiz, availableFrom: e.target.value })}
+            onChange={(e) =>
+              setQuiz({ ...quiz, availableFrom: e.target.value })
+            }
           />
         </Col>
         <Col>
@@ -200,13 +249,19 @@ export default function QuizEditorPage() {
           <FormControl
             type="datetime-local"
             value={quiz.availableUntil || ""}
-            onChange={(e) => setQuiz({ ...quiz, availableUntil: e.target.value })}
+            onChange={(e) =>
+              setQuiz({ ...quiz, availableUntil: e.target.value })
+            }
           />
         </Col>
       </Row>
 
       <div className="d-flex justify-content-end gap-2 mt-4">
-        <Button variant="light" className="border" onClick={() => router.push(`/courses/${cid}/quizzes`)}>
+        <Button
+          variant="light"
+          className="border"
+          onClick={() => router.push(`/courses/${cid}/quizzes`)}
+        >
           Cancel
         </Button>
         <Button variant="secondary" onClick={() => save(false)}>
