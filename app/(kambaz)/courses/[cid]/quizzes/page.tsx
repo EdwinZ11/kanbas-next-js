@@ -115,13 +115,19 @@ export default function QuizzesPage() {
     dispatch(updateQuizAction(updated));
   };
 
+  const visibleQuizzes = isFaculty
+    ? quizzes
+    : quizzes.filter((quiz: any) => quiz.published);
+
   return (
     <div>
       <QuizControls onAddQuiz={createNewQuiz} isFaculty={isFaculty} />
 
-      {!quizzes.length && (
+      {!visibleQuizzes.length && (
         <div className="alert alert-light border">
-          No quizzes yet. Faculty can click <strong>+ Quiz</strong> to add one.
+          {isFaculty
+            ? <>No quizzes yet. Faculty can click <strong>+ Quiz</strong> to add one.</>
+            : "No published quizzes available."}
         </div>
       )}
 
@@ -133,7 +139,7 @@ export default function QuizzesPage() {
           </div>
 
           <ListGroup className="rounded-0">
-            {quizzes.map((quiz: any) => (
+            {visibleQuizzes.map((quiz: any) => (
               <ListGroupItem key={quiz._id} className="p-3 ps-1">
                 <div className="d-flex align-items-center">
                   <BsGripVertical className="me-2 fs-3" />
