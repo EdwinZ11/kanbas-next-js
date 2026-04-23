@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, FormCheck, FormControl } from "react-bootstrap";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../store";
+import { RootState } from "../../../../../store";
 import * as client from "../../../../client";
 
 function gradeQuestion(question: any, answer: any) {
