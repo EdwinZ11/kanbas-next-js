@@ -20,12 +20,12 @@ export default function QuizPreviewPage() {
       </div>
 
       <p className="text-secondary">
-        This preview uses the same interface as the student quiz screen. Faculty preview answers are not stored.
+        This preview uses the same interface as the student quiz screen, but preview answers are not saved.
       </p>
 
       <Button
         variant="primary"
-        onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/take`)}
+        onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/take?preview=true`)}
       >
         Start Preview
       </Button>

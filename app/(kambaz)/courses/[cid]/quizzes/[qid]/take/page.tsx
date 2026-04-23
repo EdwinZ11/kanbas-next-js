@@ -2,8 +2,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, FormCheck, FormControl } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../../store";
 import * as client from "../../../../client";
 
 function gradeQuestion(question: any, answer: any) {
@@ -32,19 +34,31 @@ function gradeQuestion(question: any, answer: any) {
 export default function TakeQuizPage() {
   const { cid, qid } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preview = searchParams.get("preview") === "true";
+
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const isFaculty = currentUser?.role === "FACULTY";
+
   const [quiz, setQuiz] = useState<any>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [submittedAttempt, setSubmittedAttempt] = useState<any>(null);
+  const [previewResults, setPreviewResults] = useState<any>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [attemptCount, setAttemptCount] = useState(0);
 
   useEffect(() => {
     const loadQuiz = async () => {
       const data = await client.findQuizById(qid as string);
       setQuiz(data);
 
+      if (preview && isFaculty) return;
+
       try {
         const latest = await client.findMyLatestQuizAttempt(qid as string);
         const count = await client.countMyQuizAttempts(qid as string);
+        setAttemptCount(count || 0);
+
         const maxedOut = data.multipleAttempts
           ? count >= data.howManyAttempts
           : count >= 1;
@@ -53,21 +67,23 @@ export default function TakeQuizPage() {
           setSubmittedAttempt(latest);
         }
       } catch {
-        // No attempts yet, ignore
+        setAttemptCount(0);
       }
     };
+
     loadQuiz();
-  }, [qid]);
+  }, [qid, preview, isFaculty]);
 
   const answerMap = useMemo(() => {
+    const source = submittedAttempt || previewResults;
     const map: Record<string, any> = {};
-    if (submittedAttempt?.answers) {
-      submittedAttempt.answers.forEach((a: any) => {
+    if (source?.answers) {
+      source.answers.forEach((a: any) => {
         map[a.questionId] = a;
       });
     }
     return map;
-  }, [submittedAttempt]);
+  }, [submittedAttempt, previewResults]);
 
   const questions = quiz?.questions || [];
   const displayedQuestions = quiz?.oneQuestionAtATime
@@ -75,6 +91,8 @@ export default function TakeQuizPage() {
     : questions;
 
   if (!quiz) return null;
+
+  const locked = !!submittedAttempt || !!previewResults;
 
   const onSubmit = async () => {
     const gradedAnswers = questions.map((q: any) => {
@@ -93,6 +111,15 @@ export default function TakeQuizPage() {
       0
     );
 
+    if (preview && isFaculty) {
+      setPreviewResults({
+        score,
+        answers: gradedAnswers,
+        submittedAt: new Date().toISOString(),
+      });
+      return;
+    }
+
     const savedAttempt = await client.submitQuizAttempt(qid as string, {
       answers: gradedAnswers,
       score,
@@ -101,11 +128,15 @@ export default function TakeQuizPage() {
     setSubmittedAttempt(savedAttempt);
   };
 
+  const resultsSource = submittedAttempt || previewResults;
+
   return (
     <div className="p-3" id="wd-take-quiz">
       <div className="d-flex align-items-center mb-3">
-        <h2 className="me-auto">{quiz.title}</h2>
-        {!submittedAttempt && (
+        <h2 className="me-auto">
+          {quiz.title} {preview && isFaculty ? "(Preview)" : ""}
+        </h2>
+        {!locked && (
           <Button
             variant="secondary"
             onClick={() => router.push(`/courses/${cid}/quizzes/${qid}`)}
@@ -115,18 +146,27 @@ export default function TakeQuizPage() {
         )}
       </div>
 
-      {submittedAttempt && (
+      {resultsSource && (
         <div className="alert alert-info">
-          Final Score: <strong>{submittedAttempt.score}</strong>
+          <div>
+            Final Score: <strong>{resultsSource.score}</strong>
+          </div>
+          <div>
+            Submitted:{" "}
+            <strong>{new Date(resultsSource.submittedAt).toLocaleString()}</strong>
+          </div>
+          {!preview && (
+            <div>
+              Attempt: <strong>{submittedAttempt?.attemptNumber}</strong>
+            </div>
+          )}
         </div>
       )}
 
       {displayedQuestions.map((question: any) => {
         const graded = answerMap[question._id];
-        const submitted = submittedAttempt
-          ? graded?.answer
-          : answers[question._id];
-        const borderClass = submittedAttempt
+        const submitted = locked ? graded?.answer : answers[question._id];
+        const borderClass = locked
           ? graded?.isCorrect
             ? "border-success"
             : "border-danger"
@@ -147,7 +187,7 @@ export default function TakeQuizPage() {
                   <FormCheck
                     key={choice._id}
                     type="radio"
-                    disabled={!!submittedAttempt}
+                    disabled={locked}
                     name={`mc-${question._id}`}
                     label={choice.text}
                     checked={submitted === choice._id}
@@ -161,7 +201,7 @@ export default function TakeQuizPage() {
                 <>
                   <FormCheck
                     type="radio"
-                    disabled={!!submittedAttempt}
+                    disabled={locked}
                     name={`tf-${question._id}`}
                     label="True"
                     checked={submitted === true}
@@ -171,7 +211,7 @@ export default function TakeQuizPage() {
                   />
                   <FormCheck
                     type="radio"
-                    disabled={!!submittedAttempt}
+                    disabled={locked}
                     name={`tf-${question._id}`}
                     label="False"
                     checked={submitted === false}
@@ -184,7 +224,7 @@ export default function TakeQuizPage() {
 
               {question.type === "FILL_IN_BLANK" && (
                 <FormControl
-                  disabled={!!submittedAttempt}
+                  disabled={locked}
                   value={submitted || ""}
                   onChange={(e) =>
                     setAnswers({ ...answers, [question._id]: e.target.value })
@@ -192,13 +232,13 @@ export default function TakeQuizPage() {
                 />
               )}
 
-              {submittedAttempt && (
+              {locked && (
                 <div
                   className={`mt-3 fw-bold ${
                     graded?.isCorrect ? "text-success" : "text-danger"
                   }`}
                 >
-                  {graded?.isCorrect ? "Correct" : "Incorrect"}
+                  {graded?.isCorrect ? "✔ Correct" : "✘ Incorrect"}
                 </div>
               )}
             </Card.Body>
@@ -206,7 +246,7 @@ export default function TakeQuizPage() {
         );
       })}
 
-      {!submittedAttempt && quiz.oneQuestionAtATime && (
+      {!locked && quiz.oneQuestionAtATime && (
         <div className="d-flex justify-content-between mb-3">
           <Button
             variant="light"
@@ -229,9 +269,9 @@ export default function TakeQuizPage() {
         </div>
       )}
 
-      {!submittedAttempt && (
+      {!locked && (
         <Button variant="danger" onClick={onSubmit}>
-          Submit Quiz
+          {preview && isFaculty ? "Finish Preview" : "Submit Quiz"}
         </Button>
       )}
     </div>
