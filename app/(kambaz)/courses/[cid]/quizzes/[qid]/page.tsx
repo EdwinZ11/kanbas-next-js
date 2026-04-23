@@ -35,19 +35,21 @@ export default function QuizDetailsPage() {
           setLatestAttempt(latest);
         } catch {
           setAttemptCount(0);
+          setLatestAttempt(null);
         }
       }
     };
 
     loadQuiz();
-  }, [qid, currentUser?._id]);
+  }, [qid, currentUser?._id, isStudent]);
 
   if (!quiz) return null;
 
-  const totalPoints = quiz.questions?.reduce(
-    (sum: number, q: any) => sum + (q.points || 0),
-    0
-  );
+  const totalPoints =
+    quiz.questions?.reduce(
+      (sum: number, q: any) => sum + (q.points || 0),
+      0
+    ) || 0;
 
   const canRetake =
     isStudent &&
@@ -64,13 +66,17 @@ export default function QuizDetailsPage() {
             <Button
               variant="secondary"
               className="me-2"
-              onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/preview`)}
+              onClick={() =>
+                router.push(`/courses/${cid}/quizzes/${qid}/preview`)
+              }
             >
               Preview
             </Button>
             <Button
               variant="danger"
-              onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/editor`)}
+              onClick={() =>
+                router.push(`/courses/${cid}/quizzes/${qid}/editor`)
+              }
             >
               Edit
             </Button>
@@ -89,7 +95,10 @@ export default function QuizDetailsPage() {
           {quiz.multipleAttempts && (
             <p><strong>How Many Attempts:</strong> {quiz.howManyAttempts}</p>
           )}
-          <p><strong>Show Correct Answers:</strong> {quiz.showCorrectAnswers || "Not configured"}</p>
+          <p>
+            <strong>Show Correct Answers:</strong>{" "}
+            {quiz.showCorrectAnswers ? "Yes" : "No"}
+          </p>
           <p><strong>Access Code:</strong> {quiz.accessCode || "None"}</p>
           <p><strong>One Question at a Time:</strong> {quiz.oneQuestionAtATime ? "Yes" : "No"}</p>
           <p><strong>Webcam Required:</strong> {quiz.webcamRequired ? "Yes" : "No"}</p>
@@ -104,22 +113,43 @@ export default function QuizDetailsPage() {
         <div className="mt-4">
           {latestAttempt && (
             <div className="alert alert-info">
-              Last score: <strong>{latestAttempt.score}</strong>
+              <div>
+                Last score: <strong>{latestAttempt.score}</strong>
+              </div>
+              <div>
+                Last submitted:{" "}
+                <strong>
+                  {new Date(latestAttempt.submittedAt).toLocaleString()}
+                </strong>
+              </div>
             </div>
           )}
 
-          {canRetake ? (
-            <Button
-              variant="primary"
-              onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/take`)}
-            >
-              {attemptCount > 0 ? "Retake Quiz" : "Start Quiz"}
-            </Button>
-          ) : (
-            <Button variant="secondary" disabled>
-              No Attempts Remaining
-            </Button>
-          )}
+          <div className="d-flex gap-2">
+            {latestAttempt && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  router.push(`/courses/${cid}/quizzes/${qid}/take?review=true`)
+                }
+              >
+                Review Last Attempt
+              </Button>
+            )}
+
+            {canRetake ? (
+              <Button
+                variant="primary"
+                onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/take`)}
+              >
+                {attemptCount > 0 ? "Retake Quiz" : "Start Quiz"}
+              </Button>
+            ) : (
+              <Button variant="secondary" disabled>
+                No Attempts Remaining
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

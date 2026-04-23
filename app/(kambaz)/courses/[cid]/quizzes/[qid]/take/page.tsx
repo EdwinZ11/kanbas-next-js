@@ -49,7 +49,6 @@ export default function TakeQuizPage() {
   const [submittedAttempt, setSubmittedAttempt] = useState<any>(null);
   const [previewResults, setPreviewResults] = useState<any>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [attemptCount, setAttemptCount] = useState(0);
   const [justSubmitted, setJustSubmitted] = useState(false);
 
   useEffect(() => {
@@ -62,7 +61,6 @@ export default function TakeQuizPage() {
       try {
         const latest = await client.findMyLatestQuizAttempt(qid as string);
         const count = await client.countMyQuizAttempts(qid as string);
-        setAttemptCount(count || 0);
 
         if (review && latest) {
           setSubmittedAttempt(latest);
@@ -77,7 +75,7 @@ export default function TakeQuizPage() {
           setSubmittedAttempt(latest);
         }
       } catch {
-        setAttemptCount(0);
+        // no saved attempt yet
       }
     };
 
@@ -96,10 +94,10 @@ export default function TakeQuizPage() {
   }, [submittedAttempt, previewResults]);
 
   const questions = quiz?.questions || [];
-  const displayedQuestions =
-    !review && quiz?.oneQuestionAtATime
-      ? questions.slice(questionIndex, questionIndex + 1)
-      : questions;
+  const useSingleQuestionView = !!quiz?.oneQuestionAtATime;
+  const displayedQuestions = useSingleQuestionView
+    ? questions.slice(questionIndex, questionIndex + 1)
+    : questions;
 
   if (!quiz) return null;
 
@@ -158,7 +156,8 @@ export default function TakeQuizPage() {
     if (question.type === "TRUE_FALSE") {
       return (
         <div className="mt-2 small text-success">
-          Correct answer: <strong>{question.trueFalseAnswer ? "True" : "False"}</strong>
+          Correct answer:{" "}
+          <strong>{question.trueFalseAnswer ? "True" : "False"}</strong>
         </div>
       );
     }
@@ -204,14 +203,6 @@ export default function TakeQuizPage() {
           >
             Back to Quiz
           </Button>
-          <Button
-            variant="primary"
-            onClick={() =>
-              router.push(`/courses/${cid}/quizzes/${qid}/take?review=true`)
-            }
-          >
-            Review Last Attempt
-          </Button>
         </div>
       </div>
     );
@@ -252,6 +243,25 @@ export default function TakeQuizPage() {
               Attempt: <strong>{submittedAttempt.attemptNumber}</strong>
             </div>
           )}
+        </div>
+      )}
+
+      {useSingleQuestionView && questions.length > 1 && (
+        <div className="mb-3 d-flex flex-wrap gap-2">
+          {questions.map((_: any, index: number) => {
+            const isCurrent = index === questionIndex;
+            return (
+              <Button
+                key={index}
+                size="sm"
+                variant={isCurrent ? "primary" : "light"}
+                className={isCurrent ? "" : "border"}
+                onClick={() => setQuestionIndex(index)}
+              >
+                {index + 1}
+              </Button>
+            );
+          })}
         </div>
       )}
 
@@ -401,7 +411,30 @@ export default function TakeQuizPage() {
         );
       })}
 
-      {!review && !preview && quiz.oneQuestionAtATime && (
+      {useSingleQuestionView && !review && !preview && (
+        <div className="d-flex justify-content-between mb-3">
+          <Button
+            variant="light"
+            className="border"
+            disabled={questionIndex === 0}
+            onClick={() => setQuestionIndex((i) => Math.max(i - 1, 0))}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="light"
+            className="border"
+            disabled={questionIndex >= questions.length - 1}
+            onClick={() =>
+              setQuestionIndex((i) => Math.min(i + 1, questions.length - 1))
+            }
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
+      {useSingleQuestionView && (review || preview) && (
         <div className="d-flex justify-content-between mb-3">
           <Button
             variant="light"
