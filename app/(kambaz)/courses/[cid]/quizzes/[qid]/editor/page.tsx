@@ -72,13 +72,7 @@ export default function QuizEditorPage() {
 
     console.log("SAVING QUIZ PAYLOAD:", payload);
 
-    let updated;
-
-    if (qid === "new") {
-      updated = await client.createQuiz(payload);
-    } else {
-      updated = await client.updateQuiz(payload);
-    }
+    const updated = await client.updateQuiz(payload);
 
     console.log("UPDATED QUIZ RETURNED:", updated);
 
