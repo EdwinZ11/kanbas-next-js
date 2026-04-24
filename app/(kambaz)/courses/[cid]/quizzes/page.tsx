@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { ListGroup, ListGroupItem, Dropdown } from "react-bootstrap";
@@ -36,6 +36,8 @@ function formatAvailability(quiz: any) {
   return "No availability dates";
 }
 
+type SortBy = "NAME" | "DUE_DATE" | "AVAILABLE_DATE";
+
 export default function QuizzesPage() {
   const { cid } = useParams();
   const router = useRouter();
@@ -47,6 +49,8 @@ export default function QuizzesPage() {
   const { currentUser } = useSelector(
     (state: RootState) => state.accountReducer
   );
+
+  const [sortBy, setSortBy] = useState<SortBy>("NAME");
 
   const isFaculty = currentUser?.role === "FACULTY";
   const isStudent = currentUser?.role === "STUDENT";
@@ -115,9 +119,35 @@ export default function QuizzesPage() {
     dispatch(updateQuizAction(updated));
   };
 
-  const visibleQuizzes = isFaculty
+  const baseVisibleQuizzes = isFaculty
     ? quizzes
     : quizzes.filter((quiz: any) => quiz.published);
+
+  const visibleQuizzes = useMemo(() => {
+    const sorted = [...baseVisibleQuizzes];
+
+    sorted.sort((a: any, b: any) => {
+      if (sortBy === "NAME") {
+        return (a.title || "").localeCompare(b.title || "");
+      }
+
+      if (sortBy === "DUE_DATE") {
+        const aTime = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const bTime = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return aTime - bTime;
+      }
+
+      const aTime = a.availableFrom
+        ? new Date(a.availableFrom).getTime()
+        : Infinity;
+      const bTime = b.availableFrom
+        ? new Date(b.availableFrom).getTime()
+        : Infinity;
+      return aTime - bTime;
+    });
+
+    return sorted;
+  }, [baseVisibleQuizzes, sortBy]);
 
   return (
     <div>
@@ -125,9 +155,14 @@ export default function QuizzesPage() {
 
       {!visibleQuizzes.length && (
         <div className="alert alert-light border">
-          {isFaculty
-            ? <>No quizzes yet. Faculty can click <strong>+ Quiz</strong> to add one.</>
-            : "No published quizzes available."}
+          {isFaculty ? (
+            <>
+              No quizzes yet. Faculty can click <strong>+ Quiz</strong> to add
+              one.
+            </>
+          ) : (
+            "No published quizzes available."
+          )}
         </div>
       )}
 
@@ -230,9 +265,32 @@ export default function QuizzesPage() {
                           >
                             Edit
                           </Dropdown.Item>
+
                           <Dropdown.Item onClick={() => togglePublish(quiz)}>
                             {quiz.published ? "Unpublish" : "Publish"}
                           </Dropdown.Item>
+
+                          <Dropdown.Item
+                            onClick={() => setSortBy("NAME")}
+                            active={sortBy === "NAME"}
+                          >
+                            Sort by name
+                          </Dropdown.Item>
+
+                          <Dropdown.Item
+                            onClick={() => setSortBy("DUE_DATE")}
+                            active={sortBy === "DUE_DATE"}
+                          >
+                            Sort by due date
+                          </Dropdown.Item>
+
+                          <Dropdown.Item
+                            onClick={() => setSortBy("AVAILABLE_DATE")}
+                            active={sortBy === "AVAILABLE_DATE"}
+                          >
+                            Sort by available date
+                          </Dropdown.Item>
+
                           <Dropdown.Item
                             className="text-danger"
                             onClick={() => deleteQuiz(quiz._id)}
