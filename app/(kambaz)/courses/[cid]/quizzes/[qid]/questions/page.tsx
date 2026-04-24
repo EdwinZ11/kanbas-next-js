@@ -67,7 +67,7 @@ export default function QuizQuestionsPage() {
 
   const saveQuiz = async () => {
     await client.updateQuiz(quiz);
-    router.push(`/courses/${cid}/quizzes/${qid}`);
+    router.push(`/courses/${cid}/quizzes/${qid}/editor`);
   };
 
   const removeQuestion = (questionId: string) => {

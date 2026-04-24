@@ -102,9 +102,11 @@ export default function TakeQuizPage() {
   if (!quiz) return null;
 
   const resultsSource = submittedAttempt || previewResults;
-  const inReviewMode = review || preview;
+  const previewSubmitted = !!previewResults;
+  const inReviewMode = review || previewSubmitted || !!submittedAttempt;
   const locked = inReviewMode;
-  const showCorrectAnswers = preview || !!quiz.showCorrectAnswers;
+  const showCorrectAnswers =
+    previewSubmitted || review || !!quiz.showCorrectAnswers;
 
   const onSubmit = async () => {
     const gradedAnswers = questions.map((q: any) => {
@@ -145,7 +147,9 @@ export default function TakeQuizPage() {
     if (!showCorrectAnswers) return null;
 
     if (question.type === "MULTIPLE_CHOICE") {
-      const correctChoice = (question.choices || []).find((c: any) => c.isCorrect);
+      const correctChoice = (question.choices || []).find(
+        (c: any) => c.isCorrect
+      );
       return correctChoice ? (
         <div className="mt-2 small text-success">
           Correct answer: <strong>{correctChoice.text}</strong>
@@ -217,7 +221,7 @@ export default function TakeQuizPage() {
           {review ? " (Last Attempt Review)" : ""}
         </h2>
 
-        {!review && !preview && (
+        {!review && !submittedAttempt && !previewSubmitted && (
           <Button
             variant="secondary"
             onClick={() => router.push(`/courses/${cid}/quizzes/${qid}`)}
@@ -227,7 +231,7 @@ export default function TakeQuizPage() {
         )}
       </div>
 
-      {resultsSource && (review || preview) && (
+      {resultsSource && (review || previewSubmitted || !!submittedAttempt) && (
         <div className="alert alert-info">
           <div>
             Final Score: <strong>{resultsSource.score}</strong>
@@ -411,7 +415,7 @@ export default function TakeQuizPage() {
         );
       })}
 
-      {useSingleQuestionView && !review && !preview && (
+      {useSingleQuestionView && (
         <div className="d-flex justify-content-between mb-3">
           <Button
             variant="light"
@@ -434,36 +438,13 @@ export default function TakeQuizPage() {
         </div>
       )}
 
-      {useSingleQuestionView && (review || preview) && (
-        <div className="d-flex justify-content-between mb-3">
-          <Button
-            variant="light"
-            className="border"
-            disabled={questionIndex === 0}
-            onClick={() => setQuestionIndex((i) => Math.max(i - 1, 0))}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="light"
-            className="border"
-            disabled={questionIndex >= questions.length - 1}
-            onClick={() =>
-              setQuestionIndex((i) => Math.min(i + 1, questions.length - 1))
-            }
-          >
-            Next
-          </Button>
-        </div>
-      )}
-
-      {!review && !preview && (
+      {!review && !submittedAttempt && !previewSubmitted && (
         <Button variant="danger" onClick={onSubmit}>
-          Submit Quiz
+          {preview && isFaculty ? "Submit Preview" : "Submit Quiz"}
         </Button>
       )}
 
-      {(review || preview) && (
+      {(review || previewSubmitted || !!submittedAttempt) && (
         <div className="d-flex gap-2">
           <Button
             variant="secondary"
@@ -471,6 +452,19 @@ export default function TakeQuizPage() {
           >
             Back to Quiz
           </Button>
+
+          {preview && isFaculty && (
+            <Button
+              variant="outline-primary"
+              onClick={() => {
+                setPreviewResults(null);
+                setAnswers({});
+                setQuestionIndex(0);
+              }}
+            >
+              Try Preview Again
+            </Button>
+          )}
         </div>
       )}
     </div>
