@@ -19,9 +19,12 @@ export default function QuizQuestionsPage() {
   const { cid, qid } = useParams();
   const router = useRouter();
   const [quiz, setQuiz] = useState<any>(null);
+
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
+  const [draftQuestion, setDraftQuestion] = useState<any>(null);
+  const [isNewQuestion, setIsNewQuestion] = useState(false);
 
   useEffect(() => {
     const loadQuiz = async () => {
@@ -37,7 +40,7 @@ export default function QuizQuestionsPage() {
     quiz.questions?.reduce((sum: number, q: any) => sum + (q.points || 0), 0) ||
     0;
 
-  const addQuestion = () => {
+  const startNewQuestion = () => {
     const newQuestion = {
       _id: uuidv4(),
       type: "MULTIPLE_CHOICE",
@@ -52,22 +55,43 @@ export default function QuizQuestionsPage() {
       blankAnswers: [""],
     };
 
-    setQuiz({ ...quiz, questions: [...(quiz.questions || []), newQuestion] });
+    setDraftQuestion(newQuestion);
     setEditingQuestionId(newQuestion._id);
+    setIsNewQuestion(true);
   };
 
-  const updateQuestion = (questionId: string, updates: any) => {
-    setQuiz({
-      ...quiz,
-      questions: quiz.questions.map((q: any) =>
-        q._id === questionId ? { ...q, ...updates } : q
-      ),
-    });
+  const startEditQuestion = (question: any) => {
+    setDraftQuestion(JSON.parse(JSON.stringify(question)));
+    setEditingQuestionId(question._id);
+    setIsNewQuestion(false);
   };
 
-  const saveQuiz = async () => {
-    await client.updateQuiz(quiz);
-    router.push(`/courses/${cid}/quizzes/${qid}/editor`);
+  const cancelEditQuestion = () => {
+    setDraftQuestion(null);
+    setEditingQuestionId(null);
+    setIsNewQuestion(false);
+  };
+
+  const saveQuestion = () => {
+    if (!draftQuestion) return;
+
+    if (isNewQuestion) {
+      setQuiz({
+        ...quiz,
+        questions: [...(quiz.questions || []), draftQuestion],
+      });
+    } else {
+      setQuiz({
+        ...quiz,
+        questions: quiz.questions.map((q: any) =>
+          q._id === draftQuestion._id ? draftQuestion : q
+        ),
+      });
+    }
+
+    setDraftQuestion(null);
+    setEditingQuestionId(null);
+    setIsNewQuestion(false);
   };
 
   const removeQuestion = (questionId: string) => {
@@ -75,7 +99,21 @@ export default function QuizQuestionsPage() {
       ...quiz,
       questions: quiz.questions.filter((q: any) => q._id !== questionId),
     });
+
+    if (editingQuestionId === questionId) {
+      cancelEditQuestion();
+    }
   };
+
+  const saveQuiz = async () => {
+    await client.updateQuiz(quiz);
+    router.push(`/courses/${cid}/quizzes/${qid}/editor`);
+  };
+
+  const questionsToRender = [...(quiz.questions || [])];
+  if (isNewQuestion && draftQuestion) {
+    questionsToRender.push(draftQuestion);
+  }
 
   return (
     <div className="p-3" id="wd-quiz-questions-editor">
@@ -99,12 +137,19 @@ export default function QuizQuestionsPage() {
         </div>
       </div>
 
-      <Button className="mb-3" variant="danger" onClick={addQuestion}>
+      <Button
+        className="mb-3"
+        variant="danger"
+        onClick={startNewQuestion}
+        disabled={!!editingQuestionId}
+      >
         New Question
       </Button>
 
-      {(quiz.questions || []).map((question: any) => {
+      {questionsToRender.map((question: any) => {
         const editing = editingQuestionId === question._id;
+        const currentQuestion = editing ? draftQuestion : question;
+
         return (
           <Card key={question._id} className="mb-3">
             <Card.Body>
@@ -117,7 +162,8 @@ export default function QuizQuestionsPage() {
                       size="sm"
                       variant="outline-secondary"
                       className="me-2"
-                      onClick={() => setEditingQuestionId(question._id)}
+                      onClick={() => startEditQuestion(question)}
+                      disabled={!!editingQuestionId}
                     >
                       Edit
                     </Button>
@@ -125,6 +171,7 @@ export default function QuizQuestionsPage() {
                       size="sm"
                       variant="outline-danger"
                       onClick={() => removeQuestion(question._id)}
+                      disabled={!!editingQuestionId}
                     >
                       Delete
                     </Button>
@@ -139,9 +186,12 @@ export default function QuizQuestionsPage() {
                   <FormLabel>Question Type</FormLabel>
                   <FormSelect
                     className="mb-2"
-                    value={question.type}
+                    value={currentQuestion.type}
                     onChange={(e) =>
-                      updateQuestion(question._id, { type: e.target.value })
+                      setDraftQuestion({
+                        ...currentQuestion,
+                        type: e.target.value,
+                      })
                     }
                   >
                     <option value="MULTIPLE_CHOICE">Multiple Choice</option>
@@ -152,9 +202,12 @@ export default function QuizQuestionsPage() {
                   <FormLabel>Title</FormLabel>
                   <FormControl
                     className="mb-2"
-                    value={question.title}
+                    value={currentQuestion.title}
                     onChange={(e) =>
-                      updateQuestion(question._id, { title: e.target.value })
+                      setDraftQuestion({
+                        ...currentQuestion,
+                        title: e.target.value,
+                      })
                     }
                   />
 
@@ -162,9 +215,10 @@ export default function QuizQuestionsPage() {
                   <FormControl
                     className="mb-2"
                     type="number"
-                    value={question.points}
+                    value={currentQuestion.points}
                     onChange={(e) =>
-                      updateQuestion(question._id, {
+                      setDraftQuestion({
+                        ...currentQuestion,
                         points: parseInt(e.target.value) || 0,
                       })
                     }
@@ -175,16 +229,19 @@ export default function QuizQuestionsPage() {
                     as="textarea"
                     rows={4}
                     className="mb-3"
-                    value={question.question}
+                    value={currentQuestion.question}
                     onChange={(e) =>
-                      updateQuestion(question._id, { question: e.target.value })
+                      setDraftQuestion({
+                        ...currentQuestion,
+                        question: e.target.value,
+                      })
                     }
                   />
 
-                  {question.type === "MULTIPLE_CHOICE" && (
+                  {currentQuestion.type === "MULTIPLE_CHOICE" && (
                     <div className="mb-3">
                       <FormLabel>Choices</FormLabel>
-                      {(question.choices || []).map(
+                      {(currentQuestion.choices || []).map(
                         (choice: any, index: number) => (
                           <div
                             key={choice._id}
@@ -192,26 +249,32 @@ export default function QuizQuestionsPage() {
                           >
                             <FormCheck
                               type="radio"
-                              name={`correct-${question._id}`}
+                              name={`correct-${currentQuestion._id}`}
                               checked={!!choice.isCorrect}
                               onChange={() => {
-                                updateQuestion(question._id, {
-                                  choices: question.choices.map((c: any) => ({
-                                    ...c,
-                                    isCorrect: c._id === choice._id,
-                                  })),
+                                setDraftQuestion({
+                                  ...currentQuestion,
+                                  choices: currentQuestion.choices.map(
+                                    (c: any) => ({
+                                      ...c,
+                                      isCorrect: c._id === choice._id,
+                                    })
+                                  ),
                                 });
                               }}
                             />
                             <FormControl
                               value={choice.text}
                               onChange={(e) => {
-                                const newChoices = [...question.choices];
+                                const newChoices = [
+                                  ...(currentQuestion.choices || []),
+                                ];
                                 newChoices[index] = {
                                   ...choice,
                                   text: e.target.value,
                                 };
-                                updateQuestion(question._id, {
+                                setDraftQuestion({
+                                  ...currentQuestion,
                                   choices: newChoices,
                                 });
                               }}
@@ -220,8 +283,9 @@ export default function QuizQuestionsPage() {
                               variant="outline-danger"
                               size="sm"
                               onClick={() => {
-                                updateQuestion(question._id, {
-                                  choices: question.choices.filter(
+                                setDraftQuestion({
+                                  ...currentQuestion,
+                                  choices: currentQuestion.choices.filter(
                                     (c: any) => c._id !== choice._id
                                   ),
                                 });
@@ -236,9 +300,10 @@ export default function QuizQuestionsPage() {
                         variant="outline-secondary"
                         size="sm"
                         onClick={() =>
-                          updateQuestion(question._id, {
+                          setDraftQuestion({
+                            ...currentQuestion,
                             choices: [
-                              ...(question.choices || []),
+                              ...(currentQuestion.choices || []),
                               { _id: uuidv4(), text: "", isCorrect: false },
                             ],
                           })
@@ -249,15 +314,16 @@ export default function QuizQuestionsPage() {
                     </div>
                   )}
 
-                  {question.type === "TRUE_FALSE" && (
+                  {currentQuestion.type === "TRUE_FALSE" && (
                     <div className="mb-3">
                       <FormCheck
                         type="radio"
                         label="True"
-                        name={`tf-${question._id}`}
-                        checked={question.trueFalseAnswer === true}
+                        name={`tf-${currentQuestion._id}`}
+                        checked={currentQuestion.trueFalseAnswer === true}
                         onChange={() =>
-                          updateQuestion(question._id, {
+                          setDraftQuestion({
+                            ...currentQuestion,
                             trueFalseAnswer: true,
                           })
                         }
@@ -265,10 +331,11 @@ export default function QuizQuestionsPage() {
                       <FormCheck
                         type="radio"
                         label="False"
-                        name={`tf-${question._id}`}
-                        checked={question.trueFalseAnswer === false}
+                        name={`tf-${currentQuestion._id}`}
+                        checked={currentQuestion.trueFalseAnswer === false}
                         onChange={() =>
-                          updateQuestion(question._id, {
+                          setDraftQuestion({
+                            ...currentQuestion,
                             trueFalseAnswer: false,
                           })
                         }
@@ -276,18 +343,21 @@ export default function QuizQuestionsPage() {
                     </div>
                   )}
 
-                  {question.type === "FILL_IN_BLANK" && (
+                  {currentQuestion.type === "FILL_IN_BLANK" && (
                     <div className="mb-3">
                       <FormLabel>Accepted Answers</FormLabel>
-                      {(question.blankAnswers || []).map(
+                      {(currentQuestion.blankAnswers || []).map(
                         (ans: string, index: number) => (
                           <div key={index} className="d-flex gap-2 mb-2">
                             <FormControl
                               value={ans}
                               onChange={(e) => {
-                                const newAnswers = [...question.blankAnswers];
+                                const newAnswers = [
+                                  ...(currentQuestion.blankAnswers || []),
+                                ];
                                 newAnswers[index] = e.target.value;
-                                updateQuestion(question._id, {
+                                setDraftQuestion({
+                                  ...currentQuestion,
                                   blankAnswers: newAnswers,
                                 });
                               }}
@@ -296,10 +366,12 @@ export default function QuizQuestionsPage() {
                               variant="outline-danger"
                               size="sm"
                               onClick={() => {
-                                updateQuestion(question._id, {
-                                  blankAnswers: question.blankAnswers.filter(
-                                    (_: string, i: number) => i !== index
-                                  ),
+                                setDraftQuestion({
+                                  ...currentQuestion,
+                                  blankAnswers:
+                                    currentQuestion.blankAnswers.filter(
+                                      (_: string, i: number) => i !== index
+                                    ),
                                 });
                               }}
                             >
@@ -312,9 +384,10 @@ export default function QuizQuestionsPage() {
                         variant="outline-secondary"
                         size="sm"
                         onClick={() =>
-                          updateQuestion(question._id, {
+                          setDraftQuestion({
+                            ...currentQuestion,
                             blankAnswers: [
-                              ...(question.blankAnswers || []),
+                              ...(currentQuestion.blankAnswers || []),
                               "",
                             ],
                           })
@@ -329,14 +402,11 @@ export default function QuizQuestionsPage() {
                     <Button
                       variant="light"
                       className="border"
-                      onClick={() => setEditingQuestionId(null)}
+                      onClick={cancelEditQuestion}
                     >
                       Cancel
                     </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => setEditingQuestionId(null)}
-                    >
+                    <Button variant="danger" onClick={saveQuestion}>
                       Save Question
                     </Button>
                   </div>

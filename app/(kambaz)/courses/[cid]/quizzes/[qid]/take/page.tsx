@@ -106,7 +106,7 @@ export default function TakeQuizPage() {
   const inReviewMode = review || previewSubmitted || !!submittedAttempt;
   const locked = inReviewMode;
   const showCorrectAnswers =
-    previewSubmitted || (review && !!quiz.showCorrectAnswers);
+    (review || previewSubmitted) && !!quiz.showCorrectAnswers;
 
   const onSubmit = async () => {
     const gradedAnswers = questions.map((q: any) => {
