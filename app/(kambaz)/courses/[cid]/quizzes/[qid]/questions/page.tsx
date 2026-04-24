@@ -107,7 +107,7 @@ export default function QuizQuestionsPage() {
 
   const saveQuiz = async () => {
     await client.updateQuiz(quiz);
-    router.push(`/courses/${cid}/quizzes/${qid}/editor`);
+    router.push(`/courses/${cid}/quizzes/${qid}`);
   };
 
   const questionsToRender = [...(quiz.questions || [])];
@@ -427,6 +427,9 @@ export default function QuizQuestionsPage() {
         </Button>
         <Button variant="danger" onClick={saveQuiz}>
           Save
+        </Button>
+        <Button variant="danger" onClick={() => save(true)}>
+          Save & Publish
         </Button>
       </div>
     </div>

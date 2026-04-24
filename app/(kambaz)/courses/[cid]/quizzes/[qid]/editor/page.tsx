@@ -203,7 +203,7 @@ export default function QuizEditorPage() {
       <FormLabel>Show Correct Answers</FormLabel>
       <FormSelect
         className="mb-3"
-        value={quiz.showCorrectAnswers ? "YES" : "NO"}
+        value={quiz.showCorrectAnswers === true ? "YES" : "NO"}
         onChange={(e) =>
           setQuiz({
             ...quiz,

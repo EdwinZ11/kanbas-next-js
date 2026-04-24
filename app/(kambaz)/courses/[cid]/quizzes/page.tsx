@@ -92,7 +92,7 @@ export default function QuizzesPage() {
       timeLimit: 20,
       multipleAttempts: false,
       howManyAttempts: 1,
-      showCorrectAnswers: "",
+      showCorrectAnswers: false,
       accessCode: "",
       oneQuestionAtATime: true,
       webcamRequired: false,
