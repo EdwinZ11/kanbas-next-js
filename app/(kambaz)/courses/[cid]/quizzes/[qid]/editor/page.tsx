@@ -24,7 +24,13 @@ export default function QuizEditorPage() {
     const loadQuiz = async () => {
       if (qid === "new") return;
       const data = await client.findQuizById(qid as string);
-      setQuiz(data);
+      setQuiz({
+        ...data,
+        showCorrectAnswers:
+          data.showCorrectAnswers === true ||
+          data.showCorrectAnswers === "true" ||
+          data.showCorrectAnswers === "YES",
+      });
     };
     loadQuiz();
   }, [qid]);
@@ -32,13 +38,17 @@ export default function QuizEditorPage() {
   if (!quiz) return null;
 
   const save = async (publish = false) => {
-    const payload = await client.updateQuiz({
+    const payload = {
       ...quiz,
-      showCorrectAnswers: quiz.showCorrectAnswers === true,
+      showCorrectAnswers:
+        quiz.showCorrectAnswers === true ||
+        quiz.showCorrectAnswers === "true" ||
+        quiz.showCorrectAnswers === "YES",
       published: publish ? true : quiz.published,
-    });
+    };
 
     console.log("SAVING QUIZ PAYLOAD:", payload);
+
     const updated = await client.updateQuiz(payload);
     console.log("UPDATED QUIZ RETURNED:", updated);
 
