@@ -428,9 +428,6 @@ export default function QuizQuestionsPage() {
         <Button variant="danger" onClick={saveQuiz}>
           Save
         </Button>
-        <Button variant="danger" onClick={() => save(true)}>
-          Save & Publish
-        </Button>
       </div>
     </div>
   );

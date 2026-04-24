@@ -32,10 +32,15 @@ export default function QuizEditorPage() {
   if (!quiz) return null;
 
   const save = async (publish = false) => {
-    const updated = await client.updateQuiz({
+    const payload = await client.updateQuiz({
       ...quiz,
+      showCorrectAnswers: quiz.showCorrectAnswers === true,
       published: publish ? true : quiz.published,
     });
+
+    console.log("SAVING QUIZ PAYLOAD:", payload);
+    const updated = await client.updateQuiz(payload);
+    console.log("UPDATED QUIZ RETURNED:", updated);
 
     if (publish) {
       router.push(`/courses/${cid}/quizzes`);
