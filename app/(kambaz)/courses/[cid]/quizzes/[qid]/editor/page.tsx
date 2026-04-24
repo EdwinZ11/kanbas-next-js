@@ -20,36 +20,66 @@ export default function QuizEditorPage() {
   const router = useRouter();
   const [quiz, setQuiz] = useState<any>(null);
 
+  const normalizeBoolean = (value: any) =>
+    value === true || value === "true" || value === "YES";
+
   useEffect(() => {
     const loadQuiz = async () => {
-      if (qid === "new") return;
+      if (qid === "new") {
+        setQuiz({
+          title: "New Quiz",
+          course: cid,
+          quizType: "GRADED_QUIZ",
+          assignmentGroup: "QUIZZES",
+          description: "",
+          timeLimit: 20,
+          shuffleAnswers: true,
+          multipleAttempts: false,
+          howManyAttempts: 1,
+          oneQuestionAtATime: true,
+          webcamRequired: false,
+          lockQuestionsAfterAnswering: false,
+          showCorrectAnswers: false,
+          accessCode: "",
+          dueDate: "",
+          availableFrom: "",
+          availableUntil: "",
+          published: false,
+          questions: [],
+        });
+        return;
+      }
+
       const data = await client.findQuizById(qid as string);
+
       setQuiz({
         ...data,
-        showCorrectAnswers:
-          data.showCorrectAnswers === true ||
-          data.showCorrectAnswers === "true" ||
-          data.showCorrectAnswers === "YES",
+        showCorrectAnswers: normalizeBoolean(data.showCorrectAnswers),
       });
     };
+
     loadQuiz();
-  }, [qid]);
+  }, [qid, cid]);
 
   if (!quiz) return null;
 
   const save = async (publish = false) => {
     const payload = {
       ...quiz,
-      showCorrectAnswers:
-        quiz.showCorrectAnswers === true ||
-        quiz.showCorrectAnswers === "true" ||
-        quiz.showCorrectAnswers === "YES",
+      showCorrectAnswers: normalizeBoolean(quiz.showCorrectAnswers),
       published: publish ? true : quiz.published,
     };
 
     console.log("SAVING QUIZ PAYLOAD:", payload);
 
-    const updated = await client.updateQuiz(payload);
+    let updated;
+
+    if (qid === "new") {
+      updated = await client.createQuiz(payload);
+    } else {
+      updated = await client.updateQuiz(payload);
+    }
+
     console.log("UPDATED QUIZ RETURNED:", updated);
 
     if (publish) {
@@ -169,6 +199,7 @@ export default function QuizEditorPage() {
             setQuiz({ ...quiz, shuffleAnswers: e.target.checked })
           }
         />
+
         <FormCheck
           label="Multiple Attempts"
           checked={!!quiz.multipleAttempts}
@@ -176,6 +207,7 @@ export default function QuizEditorPage() {
             setQuiz({ ...quiz, multipleAttempts: e.target.checked })
           }
         />
+
         {quiz.multipleAttempts && (
           <FormControl
             className="mt-2"
@@ -189,6 +221,7 @@ export default function QuizEditorPage() {
             }
           />
         )}
+
         <FormCheck
           label="One Question at a Time"
           checked={!!quiz.oneQuestionAtATime}
@@ -196,6 +229,7 @@ export default function QuizEditorPage() {
             setQuiz({ ...quiz, oneQuestionAtATime: e.target.checked })
           }
         />
+
         <FormCheck
           label="Webcam Required"
           checked={!!quiz.webcamRequired}
@@ -203,6 +237,7 @@ export default function QuizEditorPage() {
             setQuiz({ ...quiz, webcamRequired: e.target.checked })
           }
         />
+
         <FormCheck
           label="Lock Questions After Answering"
           checked={!!quiz.lockQuestionsAfterAnswering}
@@ -218,7 +253,7 @@ export default function QuizEditorPage() {
       <FormLabel>Show Correct Answers</FormLabel>
       <FormSelect
         className="mb-3"
-        value={quiz.showCorrectAnswers === true ? "YES" : "NO"}
+        value={normalizeBoolean(quiz.showCorrectAnswers) ? "YES" : "NO"}
         onChange={(e) =>
           setQuiz({
             ...quiz,
@@ -259,6 +294,7 @@ export default function QuizEditorPage() {
             }
           />
         </Col>
+
         <Col>
           <FormLabel>Until</FormLabel>
           <FormControl
@@ -279,9 +315,11 @@ export default function QuizEditorPage() {
         >
           Cancel
         </Button>
+
         <Button variant="secondary" onClick={() => save(false)}>
           Save
         </Button>
+
         <Button variant="danger" onClick={() => save(true)}>
           Save & Publish
         </Button>
