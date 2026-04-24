@@ -50,7 +50,7 @@ export default function QuizzesPage() {
     (state: RootState) => state.accountReducer
   );
 
-  const [sortBy, setSortBy] = useState<SortBy>("NAME");
+  const [sortBy, setSortBy] = useState<SortBy>("AVAILABLE_DATE");
 
   const isFaculty = currentUser?.role === "FACULTY";
   const isStudent = currentUser?.role === "STUDENT";

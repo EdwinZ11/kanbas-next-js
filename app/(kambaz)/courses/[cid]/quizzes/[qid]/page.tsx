@@ -57,12 +57,32 @@ export default function QuizDetailsPage() {
       ? attemptCount < (quiz.howManyAttempts || 1)
       : attemptCount < 1);
 
+  const togglePublish = async () => {
+    const updatedQuiz = quiz.published
+      ? await client.unpublishQuiz(quiz._id)
+      : await client.publishQuiz(quiz._id);
+    setQuiz(updatedQuiz);
+  };
+
   return (
     <div className="p-3" id="wd-quiz-details">
       <div className="d-flex align-items-center mb-3">
-        <h2 className="me-auto">{quiz.title}</h2>
+        <h2 className="me-auto">
+          {quiz.title}{" "}
+          {!quiz.published && (
+            <span className="text-secondary fs-6">(Unpublished)</span>
+          )}
+        </h2>
+
         {isFaculty && (
           <>
+            <Button
+              variant={quiz.published ? "warning" : "success"}
+              className="me-2"
+              onClick={togglePublish}
+            >
+              {quiz.published ? "Unpublish" : "Publish"}
+            </Button>
             <Button
               variant="secondary"
               className="me-2"
@@ -86,6 +106,7 @@ export default function QuizDetailsPage() {
 
       <Card>
         <Card.Body>
+          <p><strong>Description:</strong> {quiz.description || "No description"}</p>
           <p><strong>Quiz Type:</strong> {quiz.quizType}</p>
           <p><strong>Points:</strong> {totalPoints}</p>
           <p><strong>Assignment Group:</strong> {quiz.assignmentGroup}</p>
@@ -106,6 +127,7 @@ export default function QuizDetailsPage() {
           <p><strong>Due:</strong> {quiz.dueDate || "No due date"}</p>
           <p><strong>Available From:</strong> {quiz.availableFrom || "Not set"}</p>
           <p><strong>Until:</strong> {quiz.availableUntil || "Not set"}</p>
+          <p><strong>Status:</strong> {quiz.published ? "Published" : "Unpublished"}</p>
         </Card.Body>
       </Card>
 
