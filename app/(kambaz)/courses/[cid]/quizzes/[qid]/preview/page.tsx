@@ -13,7 +13,7 @@ export default function QuizPreviewPage() {
         <h2 className="me-auto">Quiz Preview</h2>
         <Button
           variant="danger"
-          onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/questions`)}
+          onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/editor`)}
         >
           Edit Quiz
         </Button>
