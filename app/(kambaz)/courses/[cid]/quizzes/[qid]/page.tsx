@@ -182,7 +182,7 @@ export default function QuizDetailsPage() {
             )}
             <p>
               <strong>Show Correct Answers:</strong>{" "}
-              {quiz.showCorrectAnswers ? "Yes" : "No"}
+              {quiz.showCorrectAnswers === "true" ? "Yes" : "No"}
             </p>
             <p>
               <strong>Access Code:</strong> {quiz.accessCode || "None"}
